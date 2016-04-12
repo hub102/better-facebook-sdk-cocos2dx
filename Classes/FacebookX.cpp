@@ -10,4 +10,13 @@
 
 namespace h102 {
   
+  FacebookListener* FacebookX::listener = NULL;
+  
+  void FacebookX::init() {
+    
+  }
+  
+  void FacebookX::setListener(h102::FacebookListener *listener) {
+    FacebookX::listener = listener;
+  }
 }
