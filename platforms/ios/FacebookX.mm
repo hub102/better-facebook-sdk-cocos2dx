@@ -69,4 +69,18 @@ namespace h102 {
     void FacebookX::logout() {
         [[[FBSDKLoginManager alloc] init] logOut];
     }
+
+	vector<string> FacebookX::getPermissionList() {
+    	vector<string> permissions;
+    
+	    FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+	    if (token) {
+	      NSSet* permissionSet = [token permissions];
+	      for (NSString* p in permissionSet) {
+	        permissions.push_back([p UTF8String]);
+	      }
+	    }
+	    
+	    return permissions;
+  	}
 }

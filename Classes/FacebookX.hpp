@@ -58,6 +58,7 @@ namespace h102 {
       static std::string getUserID();
       static bool isLoggedIn();
       static void logout();
+      static std::vector<std::string> getPermissionList();
   };
 }
 
