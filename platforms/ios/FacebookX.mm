@@ -56,12 +56,11 @@ namespace h102 {
   	}
 
     std::string FacebookX::getAccessToken() {
-        return std::string([[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String]);
+        return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
     }
     
     std::string FacebookX::getUserID() {
-        auto profile = [FBSDKProfile currentProfile];
-        return std::string([[FBSDKProfile currentProfile].userID UTF8String]);
+        return [[[FBSDKAccessToken currentAccessToken] userID] UTF8String];
     }
     
     bool FacebookX::isLoggedIn() {
