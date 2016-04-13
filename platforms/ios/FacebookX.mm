@@ -16,6 +16,7 @@
 #import "FacebookShareDelegate.h"
 
 #import "FacebookX.hpp"
+#import "FacebookX-impl.h"
 
 using namespace std;
 
@@ -89,36 +90,7 @@ namespace h102 {
         if (info.type == FB_NONE)
             return;
     
-        id<FBSDKSharingContent> shareContent;
-        if (info.type == FB_LINK) {
-            FBSDKShareLinkContent* content = [[FBSDKShareLinkContent alloc] init];
-            content.contentTitle = [NSString stringWithUTF8String:info.title.c_str()];
-            content.contentDescription = [NSString stringWithUTF8String:info.text.c_str()];
-            content.contentURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.link.c_str()]];
-            if (info.media.compare("") != 0)
-                content.imageURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.media.c_str()]];
-      
-            shareContent = content;
-        }
-        else if (info.type == FB_PHOTO) {
-            FBSDKSharePhoto* photo = [[FBSDKSharePhoto alloc] init];
-            photo.image = [UIImage imageWithContentsOfFile:[NSString stringWithUTF8String:info.media.c_str()]];
-            photo.userGenerated = YES;
-
-            FBSDKSharePhotoContent* content = [[FBSDKSharePhotoContent alloc] init];
-            content.photos = @[photo];
-
-            shareContent = content;
-        }
-        else if (info.type == FB_VIDEO) {
-            FBSDKShareVideo* video = [[FBSDKShareVideo alloc] init];
-            video.videoURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.media.c_str()]];
-          
-            FBSDKShareVideoContent* content = [[FBSDKShareVideoContent alloc] init];
-            content.video = video;
-          
-            shareContent = content;
-        }
+        id<FBSDKSharingContent> content = [FacebookXImpl getContent:info];
     
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
             NSString* ret = @"";
@@ -132,7 +104,57 @@ namespace h102 {
         }];
     
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController]
-                                     withContent:shareContent
+                                     withContent:content
                                         delegate:delegate];
     }
+    
+    bool FacebookX::canPresentWithFBApp(const h102::FBShareInfo &info) {
+        id<FBSDKSharingContent> content = [FacebookXImpl getContent:info];
+        
+        FBSDKShareDialog *dialog = [[FBSDKShareDialog alloc] init];
+        dialog.fromViewController = [UIViewController topViewController];
+        dialog.shareContent = content;
+        dialog.mode = FBSDKShareDialogModeShareSheet;
+        
+        return [dialog canShow];
+    }
 }
+
+@implementation FacebookXImpl : NSObject 
+
++ (id<FBSDKSharingContent>)getContent:(h102::FBShareInfo)info {
+    id<FBSDKSharingContent> shareContent;
+    if (info.type == h102::FB_LINK) {
+        FBSDKShareLinkContent* content = [[FBSDKShareLinkContent alloc] init];
+        content.contentTitle = [NSString stringWithUTF8String:info.title.c_str()];
+        content.contentDescription = [NSString stringWithUTF8String:info.text.c_str()];
+        content.contentURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.link.c_str()]];
+        if (info.media.compare("") != 0)
+            content.imageURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.media.c_str()]];
+        
+        shareContent = content;
+    }
+    else if (info.type == h102::FB_PHOTO) {
+        FBSDKSharePhoto* photo = [[FBSDKSharePhoto alloc] init];
+        photo.image = [UIImage imageWithContentsOfFile:[NSString stringWithUTF8String:info.media.c_str()]];
+        photo.userGenerated = YES;
+        
+        FBSDKSharePhotoContent* content = [[FBSDKSharePhotoContent alloc] init];
+        content.photos = @[photo];
+        
+        shareContent = content;
+    }
+    else if (info.type == h102::FB_VIDEO) {
+        FBSDKShareVideo* video = [[FBSDKShareVideo alloc] init];
+        video.videoURL = [NSURL URLWithString:[NSString stringWithUTF8String:info.media.c_str()]];
+        
+        FBSDKShareVideoContent* content = [[FBSDKShareVideoContent alloc] init];
+        content.video = video;
+        
+        shareContent = content;
+    }
+    
+    return shareContent;
+}
+
+@end

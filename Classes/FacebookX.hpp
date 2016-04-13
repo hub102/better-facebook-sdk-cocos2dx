@@ -81,6 +81,8 @@ namespace h102 {
         static std::vector<std::string> getPermissionList();
         
         static void share(const FBShareInfo& info);
+        
+        static bool canPresentWithFBApp(const FBShareInfo& info);
     };
 }
 
