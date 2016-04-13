@@ -41,12 +41,10 @@ namespace h102 {
 				fromViewController:[UIViewController topViewController]
 							handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
 			if (error) {
-	//         	NSLog(@"Process error");
 				if (FacebookX::listener) {
 					listener->onLogin(false, error.localizedDescription.UTF8String);
 				}
 			} else if (result.isCancelled) {
-	//         	NSLog(@"Cancelled");
 				if (FacebookX::listener) {
 				   	listener->onLogin(false, "Cancelled");
 				}
@@ -124,7 +122,9 @@ namespace h102 {
         }
     
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
-            NSString* ret = [NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]];
+            NSString* ret = @"";
+            if ([result objectForKey:@"postId"])
+                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
             listener->onSharedSuccess([ret UTF8String]);
         } failedHandler:^(id<FBSDKSharing> sharer, NSError *error) {
             listener->onSharedFailed([error.localizedDescription UTF8String]);
