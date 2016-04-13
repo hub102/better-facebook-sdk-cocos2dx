@@ -54,6 +54,9 @@ namespace h102 {
     
     static void login();
     static void login( std::vector<std::string>& permissions );
+    
+    
+    static std::vector<std::string> getPermissionList();
   };
 }
 
