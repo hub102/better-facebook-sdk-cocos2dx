@@ -14,6 +14,7 @@
 
 #import "UIViewController+Utils.h"
 #import "FacebookShareDelegate.h"
+#import "FacebookGameRequestDelegate.h"
 
 #import "FacebookX.hpp"
 #import "FacebookX-impl.h"
@@ -186,7 +187,8 @@ namespace h102 {
                          std::string cStringResult = [stringifiedResult UTF8String];
                          listener->onAPI([_tag UTF8String], cStringResult);
                      }
-                 }
+                 } else
+                     NSLog(@"%@", error);
              }];
         }
     }
@@ -235,9 +237,107 @@ namespace h102 {
         
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
     }
+
+    void FacebookX::requestInvitableFriends(const FBAPIParam &params) {
+        NSMutableDictionary* _params = [NSMutableDictionary dictionary];
+        if (params.size() > 0) {
+            if (params.find(kRI_ResponseFields) != params.end())
+                [_params setObject:@(params.at(kRI_ResponseFields).c_str()) forKey:@"fields"];
+            else
+                [_params setObject:@"name,id,picture" forKey:@"fields"];
+            
+            if (params.find(kRI_PictureSize) != params.end()) {
+                NSString* _fields = [_params objectForKey:@"fields"];
+                if (_fields == nil)
+                    _fields = @"";
+                else
+                    _fields = [_fields stringByAppendingString:@","];
+                
+                _fields = [_fields stringByAppendingString:[NSString stringWithFormat:@"picture.width(\"%s\")", params.at(kRI_PictureSize).c_str()]];
+                [_params setObject:_fields forKey:@"fields"];
+            }
+            
+            if (params.find(kRI_PaginationLimit) != params.end())
+                [_params setObject:@(params.at(kRI_PaginationLimit).c_str()) forKey:@"limit"];
+            
+            if (params.find(kRI_ExcludeFromList) != params.end())
+                [_params setObject:@(params.at(kRI_ExcludeFromList).c_str()) forKey:@"excluded_ids"];
+        }
+        else
+            [_params setObject:@"name,picture.width(300)" forKey:@"fields"];
+        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me/invitable_friends"
+                                           parameters:_params
+                                           HTTPMethod:@"GET"]
+         startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+             
+             if (!error) {
+                 NSLog(@"API executed OK!!");
+                 if (FacebookX::listener) {
+                     NSError *error;
+                     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:result
+                                                                        options:0 // Pass 0 if you don't care about the readability of the generated string
+                                                                          error:&error];
+                     
+                     if (jsonData) {
+                         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                         FBInvitableFriendsInfo invitableFriends ([jsonString UTF8String]);
+                         listener->onRequestInvitableFriends(invitableFriends);
+                     } else {
+                         NSLog(@"Got an error: %@", error);
+                     }
+                     
+                 }
+             }
+             else
+                 NSLog(@"%@", error);
+          }];
+    }
+    
+    void FacebookX::inviteFriendsWithInviteIds(const std::vector<std::string> &invite_ids, const std::string &title, const std::string &invite_text) {
+        FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+        if ([token hasGranted:[NSString stringWithFormat:@"%s", FB_PERM_READ_USER_FRIENDS.c_str()]]) {
+            NSMutableArray* recipients = [NSMutableArray new];
+            for(auto str : invite_ids)
+                [recipients addObject:[NSString stringWithUTF8String:str.c_str()]];
+            
+            FBSDKGameRequestContent* content = [[FBSDKGameRequestContent alloc] init];
+            content.title = [NSString stringWithUTF8String:title.c_str()];
+            content.message = [NSString stringWithUTF8String:invite_text.c_str()];
+            content.recipients = recipients;
+            
+            FacebookGameRequestDelegate* delegate = [[FacebookGameRequestDelegate alloc] initWithSucceedHandler:^(FBSDKGameRequestDialog* sharer, NSDictionary *result) {
+                
+                NSMutableDictionary* dict = [NSMutableDictionary new];
+                [dict setObject:[result objectForKey:@"request"] forKey:@"request"];
+                [dict setObject:[result objectForKey:@"to"] forKey:@"to"];
+                
+                NSError *error;
+                NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict
+                                                                   options:0 // Pass 0 if you don't care about the readability of the generated string
+                                                                     error:&error];
+                
+                if (jsonData) {
+                    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                    listener->onInviteFriendsWithInviteIdsResult(true, [jsonString UTF8String]);
+                } else {
+                    NSLog(@"Got an error: %@", error);
+                }                
+            } failedHandler:^(FBSDKGameRequestDialog* sharer, NSError *error) {
+                listener->onInviteFriendsWithInviteIdsResult(false, [error.localizedDescription UTF8String]);
+            } cancelHandler:^(FBSDKGameRequestDialog* sharer) {
+                listener->onInviteFriendsWithInviteIdsResult(false, "Cancelled");
+            }];
+            
+            [FBSDKGameRequestDialog showWithContent:content delegate:delegate];
+            
+        } else {
+            NSLog(@"Error: inviteFriendsWithInviteIds - Cannot grant permission: %s", FB_PERM_READ_USER_FRIENDS.c_str());
+        }
+    }
 }
 
-@implementation FacebookXImpl : NSObject 
+@implementation FacebookXImpl : NSObject
 
 + (id<FBSDKSharingContent>)getContent:(h102::FBShareInfo)info {
     id<FBSDKSharingContent> shareContent;
