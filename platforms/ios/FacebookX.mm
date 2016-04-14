@@ -22,8 +22,6 @@ using namespace std;
 
 #import <iostream>
 
-static NSMutableDictionary* apiDict = nil;
-
 namespace h102 {
 	void FacebookX::login() {
         vector<string> permissions;
@@ -34,10 +32,6 @@ namespace h102 {
     }
   
   	void FacebookX::login( std::vector<std::string>& permissions ) {
-        if (!apiDict) {
-            apiDict = [[NSMutableDictionary alloc] init];
-        }
-        
 		FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
 	
 		NSMutableArray *permissionArray = [NSMutableArray new];
@@ -129,27 +123,25 @@ namespace h102 {
     
     void FacebookX::api(const std::string& path, const std::string& tag) {
         if ([FBSDKAccessToken currentAccessToken]) {
+            NSString* _tag = [NSString stringWithUTF8String:tag.c_str()];
             NSString* _path = [NSString stringWithUTF8String:path.c_str()];
-            FBSDKGraphRequestConnection* myVar = [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]
+            [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]
                           startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                               if (!error) {
-                                  NSLog(@"API executed OK!!");
+                                  NSLog(@"API executed OK!!, tag = %@", _tag);
                                   if (FacebookX::listener) {
                                       NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                                       std::string cStringResult = [stringifiedResult UTF8String];
-                                      NSString* key = [NSString stringWithFormat:@"%p", connection];
-                                      listener->onAPI([[apiDict objectForKey:key] UTF8String], cStringResult);
+                                      listener->onAPI([_tag UTF8String], cStringResult);
                                   }
                               }
                           }];
-            NSString* key = [NSString stringWithFormat:@"%p", myVar];
-            NSString* value = [NSString stringWithUTF8String:tag.c_str()];
-            [apiDict setObject:value forKey:key];
         }
     }
     
     void FacebookX::api(const std::string& path, const FBAPIParam& params, const std::string& tag) {
         if ([FBSDKAccessToken currentAccessToken]) {
+            NSString* _tag = [NSString stringWithUTF8String:tag.c_str()];
             NSString* _path = [NSString stringWithUTF8String:path.c_str()];
             NSMutableDictionary* _params = [NSMutableDictionary dictionary];
             for (auto i = params.begin(); i != params.end(); i++) {
@@ -158,27 +150,24 @@ namespace h102 {
                 [_params setObject:value forKey:key];
             }
             
-            FBSDKGraphRequestConnection* myVar = [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params]
+            [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params]
                           startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                               if (!error) {
                                   NSLog(@"API executed OK!!");
                                   if (FacebookX::listener) {
                                       NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                                       std::string cStringResult = [stringifiedResult UTF8String];
-                                      NSString* key = [NSString stringWithFormat:@"%p", connection];
-                                      listener->onAPI([[apiDict objectForKey:key] UTF8String], cStringResult);
+                                      listener->onAPI([_tag UTF8String], cStringResult);
                                   }
                               }
                           }];
-            NSString* key = [NSString stringWithFormat:@"%p", myVar];
-            NSString* value = [NSString stringWithUTF8String:tag.c_str()];
-            [apiDict setObject:value forKey:key];
         }
     }
     
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag)
     {
         if ([FBSDKAccessToken currentAccessToken]) {
+            NSString* _tag = [NSString stringWithUTF8String:tag.c_str()];
             NSString* _path = [NSString stringWithUTF8String:path.c_str()];
             NSString* _method = [NSString stringWithUTF8String:method.c_str()];
             NSMutableDictionary* _params = [NSMutableDictionary dictionary];
@@ -188,21 +177,17 @@ namespace h102 {
                 [_params setObject:value forKey:key];
             }
             
-            FBSDKGraphRequestConnection* myVar = [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params HTTPMethod:_method]
+            [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params HTTPMethod:_method]
                 startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                  if (!error) {
                      NSLog(@"API executed OK!!");
                      if (FacebookX::listener) {
                          NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                          std::string cStringResult = [stringifiedResult UTF8String];
-                         NSString* key = [NSString stringWithFormat:@"%p", connection];
-                         listener->onAPI([[apiDict objectForKey:key] UTF8String], cStringResult);
+                         listener->onAPI([_tag UTF8String], cStringResult);
                      }
                  }
              }];
-            NSString* key = [NSString stringWithFormat:@"%p", myVar];
-            NSString* value = [NSString stringWithUTF8String:tag.c_str()];
-            [apiDict setObject:value forKey:key];
         }
     }
 }
