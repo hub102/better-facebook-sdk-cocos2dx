@@ -51,6 +51,15 @@ namespace h102 {
         std::string media;
     };
     
+    struct FBGraphStoryProperties
+    {
+        std::string type;
+        std::string title;
+        std::string description;
+        std::string image;
+        std::string url;
+    };
+    
     class FacebookListener
     {
     public:
@@ -88,6 +97,8 @@ namespace h102 {
         static void api(const std::string& path, const std::string& tag);
         static void api(const std::string& path, const FBAPIParam& params, const std::string& tag);
         static void api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag);
+        
+        static void shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, std::string& previewPropertyName);
         
         static bool canPresentWithFBApp(const FBShareInfo& info);
     };

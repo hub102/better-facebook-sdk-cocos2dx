@@ -190,6 +190,51 @@ namespace h102 {
              }];
         }
     }
+    
+    void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, std::string& previewPropertyName) {
+        NSString* objectType = [NSString stringWithUTF8String:properties.type.c_str()];
+        NSString* title = [NSString stringWithUTF8String:properties.title.c_str()];
+        NSString* description = [NSString stringWithUTF8String:properties.description.c_str()];
+        NSString* image = [NSString stringWithUTF8String:properties.image.c_str()];
+        NSString* url = [NSString stringWithUTF8String:properties.url.c_str()];
+        
+        NSURL *imageURL = [NSURL URLWithString:image];
+        FBSDKSharePhoto *photo = [FBSDKSharePhoto photoWithImageURL:imageURL userGenerated:NO];
+        
+        NSDictionary* _properties = @{
+                                      @"og:type": objectType,
+                                      @"og:title": title,
+                                      @"og:description": description,
+                                      @"og:image": photo,
+                                      @"og:url": url
+                                      };
+        
+        FBSDKShareOpenGraphObject* object = [FBSDKShareOpenGraphObject objectWithProperties:_properties];
+        
+        FBSDKShareOpenGraphAction* action = [[FBSDKShareOpenGraphAction alloc] init];
+        action.actionType = [NSString stringWithUTF8String:actionType.c_str()];
+        
+        NSString* _previewPropertyName = [NSString stringWithUTF8String:previewPropertyName.c_str()];
+        
+        [action setObject:object forKey:_previewPropertyName];
+        
+        FBSDKShareOpenGraphContent* content = [[FBSDKShareOpenGraphContent alloc] init];
+        content.action = action;
+        content.previewPropertyName = _previewPropertyName;
+        
+        FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
+            NSString* ret = [NSString stringWithFormat:@"%@", result];
+//            if ([result objectForKey:@"postId"])
+//                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
+            listener->onSharedSuccess([ret UTF8String]);
+        } failedHandler:^(id<FBSDKSharing> sharer, NSError *error) {
+            listener->onSharedFailed([error.localizedDescription UTF8String]);
+        } cancelHandler:^(id<FBSDKSharing> sharer) {
+            listener->onSharedCancel();
+        }];
+        
+        [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
+    }
 }
 
 @implementation FacebookXImpl : NSObject 
