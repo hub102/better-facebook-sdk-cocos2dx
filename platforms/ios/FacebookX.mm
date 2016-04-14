@@ -14,6 +14,7 @@
 
 #import "UIViewController+Utils.h"
 #import "FacebookShareDelegate.h"
+#import "FacebookGameRequestDelegate.h"
 
 #import "FacebookX.hpp"
 #import "FacebookX-impl.h"
@@ -246,7 +247,48 @@ namespace h102 {
              else
                  NSLog(@"%@", error);
           }];
-        
+    }
+    
+    void FacebookX::inviteFriendsWithInviteIds(const std::vector<std::string> &invite_ids, const std::string &title, const std::string &invite_text) {
+        FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+        if ([token hasGranted:[NSString stringWithFormat:@"%s", FB_PERM_READ_USER_FRIENDS.c_str()]]) {
+            NSMutableArray* recipients = [NSMutableArray new];
+            for(auto str : invite_ids)
+                [recipients addObject:[NSString stringWithUTF8String:str.c_str()]];
+            
+            FBSDKGameRequestContent* content = [[FBSDKGameRequestContent alloc] init];
+            content.title = [NSString stringWithUTF8String:title.c_str()];
+            content.message = [NSString stringWithUTF8String:invite_text.c_str()];
+            content.recipients = recipients;
+            
+            FacebookGameRequestDelegate* delegate = [[FacebookGameRequestDelegate alloc] initWithSucceedHandler:^(FBSDKGameRequestDialog* sharer, NSDictionary *result) {
+                
+                NSMutableDictionary* dict = [NSMutableDictionary new];
+                [dict setObject:[result objectForKey:@"request"] forKey:@"request"];
+                [dict setObject:[result objectForKey:@"to"] forKey:@"to"];
+                
+                NSError *error;
+                NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict
+                                                                   options:0 // Pass 0 if you don't care about the readability of the generated string
+                                                                     error:&error];
+                
+                if (jsonData) {
+                    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                    listener->onInviteFriendsWithInviteIdsResult(true, [jsonString UTF8String]);
+                } else {
+                    NSLog(@"Got an error: %@", error);
+                }                
+            } failedHandler:^(FBSDKGameRequestDialog* sharer, NSError *error) {
+                listener->onInviteFriendsWithInviteIdsResult(false, [error.localizedDescription UTF8String]);
+            } cancelHandler:^(FBSDKGameRequestDialog* sharer) {
+                listener->onInviteFriendsWithInviteIdsResult(false, "Cancelled");
+            }];
+            
+            [FBSDKGameRequestDialog showWithContent:content delegate:delegate];
+            
+        } else {
+            NSLog(@"Error: inviteFriendsWithInviteIds - Cannot grant permission: %s", FB_PERM_READ_USER_FRIENDS.c_str());
+        }
     }
 }
 

@@ -217,6 +217,7 @@ namespace h102 {
         static bool canPresentWithFBApp(const FBShareInfo& info);
         
         static void requestInvitableFriends( const FBAPIParam& params);
+        static void inviteFriendsWithInviteIds( const std::vector<std::string>& invite_ids, const std::string& title, const std::string& invite_text );
     };
 }
 
