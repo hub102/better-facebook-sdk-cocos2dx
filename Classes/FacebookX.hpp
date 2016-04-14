@@ -227,7 +227,7 @@ namespace h102 {
         static void api(const std::string& path, const FBAPIParam& params, const std::string& tag);
         static void api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag);
         
-        static void shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, std::string& previewPropertyName);
+        static void shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName);
         
         static bool canPresentWithFBApp(const FBShareInfo& info);
         

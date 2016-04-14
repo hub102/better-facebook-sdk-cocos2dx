@@ -193,7 +193,7 @@ namespace h102 {
         }
     }
     
-    void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, std::string& previewPropertyName) {
+    void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
         NSString* objectType = [NSString stringWithUTF8String:properties.type.c_str()];
         NSString* title = [NSString stringWithUTF8String:properties.title.c_str()];
         NSString* description = [NSString stringWithUTF8String:properties.description.c_str()];
