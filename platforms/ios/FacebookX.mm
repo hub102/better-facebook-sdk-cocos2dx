@@ -186,13 +186,71 @@ namespace h102 {
                          std::string cStringResult = [stringifiedResult UTF8String];
                          listener->onAPI([_tag UTF8String], cStringResult);
                      }
-                 }
+                 } else
+                     NSLog(@"%@", error);
              }];
         }
     }
+    
+    void FacebookX::requestInvitableFriends(const FBAPIParam &params) {
+        NSMutableDictionary* _params = [NSMutableDictionary dictionary];
+        if (params.size() > 0) {
+            if (params.find(kRI_ResponseFields) != params.end())
+                [_params setObject:@(params.at(kRI_ResponseFields).c_str()) forKey:@"fields"];
+            else
+                [_params setObject:@"name,id,picture" forKey:@"fields"];
+            
+            if (params.find(kRI_PictureSize) != params.end()) {
+                NSString* _fields = [_params objectForKey:@"fields"];
+                if (_fields == nil)
+                    _fields = @"";
+                else
+                    _fields = [_fields stringByAppendingString:@","];
+                
+                _fields = [_fields stringByAppendingString:[NSString stringWithFormat:@"picture.width(\"%s\")", params.at(kRI_PictureSize).c_str()]];
+                [_params setObject:_fields forKey:@"fields"];
+            }
+            
+            if (params.find(kRI_PaginationLimit) != params.end())
+                [_params setObject:@(params.at(kRI_PaginationLimit).c_str()) forKey:@"limit"];
+            
+            if (params.find(kRI_ExcludeFromList) != params.end())
+                [_params setObject:@(params.at(kRI_ExcludeFromList).c_str()) forKey:@"excluded_ids"];
+        }
+        else
+            [_params setObject:@"name,picture.width(300)" forKey:@"fields"];
+        
+        [[[FBSDKGraphRequest alloc] initWithGraphPath:@"me/invitable_friends"
+                                           parameters:_params
+                                           HTTPMethod:@"GET"]
+         startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+             
+             if (!error) {
+                 NSLog(@"API executed OK!!");
+                 if (FacebookX::listener) {
+                     NSError *error;
+                     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:result
+                                                                        options:0 // Pass 0 if you don't care about the readability of the generated string
+                                                                          error:&error];
+                     
+                     if (jsonData) {
+                         NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                         FBInvitableFriendsInfo invitableFriends ([jsonString UTF8String]);
+                         listener->onRequestInvitableFriends(invitableFriends);
+                     } else {
+                         NSLog(@"Got an error: %@", error);
+                     }
+                     
+                 }
+             }
+             else
+                 NSLog(@"%@", error);
+          }];
+        
+    }
 }
 
-@implementation FacebookXImpl : NSObject 
+@implementation FacebookXImpl : NSObject
 
 + (id<FBSDKSharingContent>)getContent:(h102::FBShareInfo)info {
     id<FBSDKSharingContent> shareContent;
