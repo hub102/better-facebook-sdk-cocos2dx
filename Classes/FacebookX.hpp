@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace h102 {
   
@@ -34,6 +35,8 @@ namespace h102 {
         FB_VIDEO = 3,
     };
   
+    typedef std::map<std::string, std::string> FBAPIParam;
+    
     struct FBShareInfo
     {
         FBShareInfo()
@@ -81,6 +84,10 @@ namespace h102 {
         static std::vector<std::string> getPermissionList();
         
         static void share(const FBShareInfo& info);
+        
+        static void api(const std::string& path, const std::string& tag);
+        static void api(const std::string& path, const FBAPIParam& params, const std::string& tag);
+        static void api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag);
         
         static bool canPresentWithFBApp(const FBShareInfo& info);
     };

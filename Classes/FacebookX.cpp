@@ -10,13 +10,17 @@
 
 namespace h102 {
   
-  FacebookListener* FacebookX::listener = NULL;
-  
-  void FacebookX::init() {
-    
-  }
-  
-  void FacebookX::setListener(h102::FacebookListener *listener) {
-    FacebookX::listener = listener;
-  }
+    FacebookListener* FacebookX::listener = NULL;
+
+    void FacebookX::init() {
+
+    }
+
+    void FacebookX::setListener(h102::FacebookListener *listener) {
+        FacebookX::listener = listener;
+    }
+
+//    void FacebookX::api(const std::string &path, const std::string &method, const FBAPIParam &params, const std::string &tag) {
+//        
+//    }
 }
