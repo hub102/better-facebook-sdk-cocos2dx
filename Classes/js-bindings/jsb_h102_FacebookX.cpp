@@ -11,6 +11,8 @@
 
 #include "FacebookX.hpp"
 
+using namespace h102;
+
 FBShareInfo map_to_FBShareInfo(const std::map<std::string, std::string>& dict)
 {
     FBShareInfo info;
@@ -27,20 +29,20 @@ FBShareInfo map_to_FBShareInfo(const std::map<std::string, std::string>& dict)
     {
         info.text = dict.find("text")->second;
     }
-    if (dict.find("image") != dict.end())
+    if (dict.find("media") != dict.end())
     {
-        info.image = dict.find("image")->second;
+        info.media = dict.find("media")->second;
     }
     if (dict.find("type") != dict.end())
     {
         std::string type = dict.find("type")->second;
         if (type.compare("link") == 0)
         {
-            info.type = sdkbox::FB_LINK;
+            info.type = FB_LINK;
         }
         else if (type.compare("photo") == 0)
         {
-            info.type = sdkbox::FB_PHOTO;
+            info.type = FB_PHOTO;
         }
     }
 
@@ -70,26 +72,28 @@ FBGraphStoryProperties map_to_FBGraphStoryProperties(const std::map<std::string,
     {
         properties.url = dict.find("url")->second;
     }
+    
+    return properties;
 }
 
-bool jsval_to_std_map_string_string(JSContext *cx, JS::HandleValue v, std::map<std::string,std::string> *ret)
-{
-    cocos2d::ValueMap value;
-    bool ok = jsval_to_ccvaluemap(cx, v, &value);
-    if (!ok)
-    {
-        return ok;
-    }
-    else
-    {
-        for (cocos2d::ValueMap::iterator it = value.begin(); it != value.end(); it++)
-        {
-            ret->insert(std::make_pair(it->first, it->second.asString()));
-        }
-    }
+// bool jsval_to_std_map_string_string(JSContext *cx, JS::HandleValue v, std::map<std::string,std::string> *ret)
+// {
+//     cocos2d::ValueMap value;
+//     bool ok = jsval_to_ccvaluemap(cx, v, &value);
+//     if (!ok)
+//     {
+//         return ok;
+//     }
+//     else
+//     {
+//         for (cocos2d::ValueMap::iterator it = value.begin(); it != value.end(); it++)
+//         {
+//             ret->insert(std::make_pair(it->first, it->second.asString()));
+//         }
+//     }
 
-    return ok;
-}
+//     return ok;
+// }
 
 // bool jsval_to_std_string(JSContext *cx, JS::HandleValue v, std::string* ret) {
 //     if(v.isString() || v.isNumber())
@@ -143,10 +147,10 @@ static bool js_is_native_obj(JSContext *cx, uint32_t argc, jsval* vp)
 	return true;
 } 
 
-extern JSClass  *jsb_h102_facebookX_class;
-extern JSObject *jsb_h102_facebookX_prototype;
+JSClass  *jsb_h102_facebookX_class;
+JSObject *jsb_h102_facebookX_prototype;
 
-bool *jsb_h102_facebookX_constructor(JSContext *cx, uint32_t argc, jsval* vp)
+bool js_h102_facebookX_constructor(JSContext *cx, uint32_t argc, jsval* vp)
 {
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	bool ok = true;
@@ -166,7 +170,7 @@ bool *jsb_h102_facebookX_constructor(JSContext *cx, uint32_t argc, jsval* vp)
 
 	js_proxy_t* p = jsb_new_proxy(cobj, obj);
 	AddNamedObjectRoot(cx, &p->obj, "FacebookX");
-	if (JS_HasPropery(cx, obj, "_ctor", &ok) && ok)
+	if (JS_HasProperty(cx, obj, "_ctor", &ok) && ok)
 		ScriptingCore::getInstance()->executeFunctionWithOwner(OBJECT_TO_JSVAL(obj), "_ctor", args);
 	return true;
 }
@@ -220,7 +224,7 @@ bool js_h102_facebookX_getUserID(JSContext *cx, uint32_t argc, jsval *vp) {
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	do {
 		if (argc == 0) {
-			std::string ret = FacebookX::getAccessToken();
+			std::string ret = FacebookX::getUserID();
 			jsval jsret = JSVAL_NULL;
 			jsret = std_string_to_jsval(cx, ret);
 			args.rval().set(jsret);
@@ -233,7 +237,7 @@ bool js_h102_facebookX_getUserID(JSContext *cx, uint32_t argc, jsval *vp) {
 }
 
 bool js_h102_facebookX_isLoggedIn(JSContext *cx, uint32_t argc, jsval *vp) {
-	JS::CallArgs args = JS:CallArgsFromVp(argc, vp);
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	do {
 		if (argc == 0) {
 			bool ret = FacebookX::isLoggedIn();
@@ -253,6 +257,7 @@ bool js_h102_facebookX_logout(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			FacebookX::logout();
+            args.rval().setUndefined();
 			return true;
 		}
 	} while (0);
@@ -266,8 +271,9 @@ bool js_h102_facebookX_getPermissionList(JSContext *cx, uint32_t argc, jsval *vp
 	do {
 		if (argc == 0) {
 			std::vector <std::string> ret = FacebookX::getPermissionList();
-			jsval ret = JSVAL_NULL;
+			jsval jsret = JSVAL_NULL;
 			jsret = std_vector_string_to_jsval(cx, ret);
+            args.rval().set(jsret);
 			return true;
 		}
 	} while (0);
@@ -285,7 +291,7 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
 			ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_share : Error processing arguments");
 			FacebookX::share(map_to_FBShareInfo(arg0));
-			args.rval().setUndefinde();
+			args.rval().setUndefined();
 			return true;
 		}
 	} while (0);
@@ -296,7 +302,7 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
 
 bool js_h102_facebookX_api(JSContext* cx, uint32_t argc, jsval *vp) {
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
-	bool ok = true
+    bool ok = true;
 
 	do {
 		if (argc == 4) {
@@ -364,13 +370,13 @@ bool js_h102_facebookX_shareOpenGraphStory(JSContext *cx, uint32_t argc, jsval *
     		ok &= jsval_to_std_string(cx, args.get(1), &actionType);
 	        std::string tag;
 	        ok &= jsval_to_std_string(cx, args.get(2), &tag);
-			FacebookX::share(map_to_FBGraphStoryProperties(arg0), actionType, tag);
-			args.rval().setUndefinde();
+			FacebookX::shareOpenGraphStory(map_to_FBGraphStoryProperties(arg0), actionType, tag);
+			args.rval().setUndefined();
 			return true;
     	}
 	} while(0);
 
-    JS_ReportError(cx, "js_h102_facebookX_inviteFriendsWithInviteIds : wrong number of arguments");
+    JS_ReportError(cx, "js_h102_facebookX_shareOpenGraphStory : wrong number of arguments");
     return false;
 }
 
@@ -397,28 +403,127 @@ bool js_h102_facebookX_canPresentWithFBApp(JSContext *cx, uint32_t argc, jsval *
     return false;
 }
 
+bool js_h102_facebookX_requestInvitableFriends(JSContext *cx, uint32_t argc, jsval *vp)
+{
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    do {
+    	if (argc == 1) {
+			std::map<std::string, std::string> arg0;
+			ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_requestInvitableFriends : Error processing arguments");
+			FacebookX::requestInvitableFriends(arg0);
+			args.rval().setUndefined();
+			return true;
+    	}
+    } while (0);
+
+	JS_ReportError(cx, "js_PluginFacebookJS_PluginFacebook_requestInvitableFriends : wrong number of arguments");
+    return false;
+}
+
 bool js_h102_facebookX_inviteFriendsWithInviteIds(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
-    if (argc == 3) {
-        std::vector<std::string> ids;
-        ok &= jsval_to_std_vector_string(cx, args.get(0), &ids);
-        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_inviteFriendsWithInviteIds : Error processing arguments");
+    do {
+	    if (argc == 3) {
+	        std::vector<std::string> ids;
+	        ok &= jsval_to_std_vector_string(cx, args.get(0), &ids);
+	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_inviteFriendsWithInviteIds : Error processing arguments");
 
-        std::string title;
-        ok &= jsval_to_std_string(cx, args.get(1), &title);
-        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
+	        std::string title;
+	        ok &= jsval_to_std_string(cx, args.get(1), &title);
+	        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
 
-        std::string text;
-        ok &= jsval_to_std_string(cx, args.get(2), &text);
-        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
+	        std::string text;
+	        ok &= jsval_to_std_string(cx, args.get(2), &text);
+	        JSB_PRECONDITION2(ok, cx, false, "Error processing arguments");
 
-        FacebookX::js_h102_facebookX_inviteFriendsWithInviteIds(ids, title, text);
+	        FacebookX::inviteFriendsWithInviteIds(ids, title, text);
 
-        args.rval().setUndefined();
-        return true;
-    }
+	        args.rval().setUndefined();
+	        return true;
+	    }
+	} while (0);
+
     JS_ReportError(cx, "js_h102_facebookX_inviteFriendsWithInviteIds : wrong number of arguments");
     return false;
+}
+
+void js_h102_facebookX_finalize(JSFreeOp *fop, JSObject *obj) {
+	CCLOGINFO("jsbinding: finalizing JS object %p (H102::FacebookX)", obj);
+}
+
+void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
+	jsb_h102_facebookX_class = (JSClass *)calloc(1, sizeof(JSClass));
+	jsb_h102_facebookX_class->name = "facebookX";
+	jsb_h102_facebookX_class->addProperty = JS_PropertyStub;
+	jsb_h102_facebookX_class->delProperty = JS_DeletePropertyStub;
+	jsb_h102_facebookX_class->getProperty = JS_PropertyStub;
+	jsb_h102_facebookX_class->setProperty = JS_StrictPropertyStub;
+	jsb_h102_facebookX_class->enumerate = JS_EnumerateStub;
+	jsb_h102_facebookX_class->resolve = JS_ResolveStub;
+	jsb_h102_facebookX_class->convert = JS_ConvertStub;
+	jsb_h102_facebookX_class->finalize = js_h102_facebookX_finalize;
+	jsb_h102_facebookX_class->flags = JSCLASS_HAS_RESERVED_SLOTS(2);
+
+	static JSPropertySpec properties[] = {
+		JS_PSG("__nativeObj", js_is_native_obj, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_PS_END
+	};
+
+	static JSFunctionSpec funcs[] = {
+		JS_FS_END
+	};
+
+	static JSFunctionSpec st_funcs[] = {
+		JS_FN("login", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, 
+			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getUserID", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("isLoggedIn", js_h102_facebookX_isLoggedIn, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("logout", js_h102_facebookX_logout, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, 
+			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("share", js_h102_facebookX_share, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("api", js_h102_facebookX_api, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("shareOpenGraphStory", js_h102_facebookX_shareOpenGraphStory, 
+			0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("canPresentWithFBApp", js_h102_facebookX_canPresentWithFBApp, 0, 
+			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("requestInvitableFriends", js_h102_facebookX_requestInvitableFriends, 0, 
+			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("inviteFriendsWithInviteIds", js_h102_facebookX_inviteFriendsWithInviteIds, 0, 
+			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+	};
+
+	jsb_h102_facebookX_prototype = JS_InitClass(
+										cx, global,
+										JS::NullPtr(),
+										jsb_h102_facebookX_class,
+										js_h102_facebookX_constructor, 0,
+										properties,
+										funcs,
+										NULL, //no static properties
+										st_funcs);
+
+	TypeTest<FacebookX> t;
+	js_type_class_t *p;
+	std::string typeName = t.s_name();
+	if (_js_global_type_map.find(typeName) == _js_global_type_map.end()) 
+	{
+		p = (js_type_class_t *)malloc(sizeof(js_type_class_t));
+		p->jsclass = jsb_h102_facebookX_class;
+		p->proto = jsb_h102_facebookX_prototype;
+		p->parentProto = NULL;
+		_js_global_type_map.insert(std::make_pair(typeName, p));
+	}
+}
+
+void register_all_h102(JSContext* cx, JS::HandleObject obj) {
+	JS::RootedObject ns(cx);
+	get_or_create_js_obj(cx, obj, "h102", &ns);
+
+	js_register_h102_facebookX(cx, ns);
 }

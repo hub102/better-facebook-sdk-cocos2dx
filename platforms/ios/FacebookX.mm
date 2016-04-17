@@ -54,7 +54,9 @@ namespace h102 {
 				}
 		   	} else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
-				listener->onLogin(true, "LoggedIn");
+                if (FacebookX::listener) {
+                    listener->onLogin(true, "LoggedIn");
+                }
 			}
 		}];
   	}
@@ -92,18 +94,24 @@ namespace h102 {
     void FacebookX::share(const FBShareInfo& info) {
         if (info.type == FB_NONE)
             return;
-    
+        
         id<FBSDKSharingContent> content = [FacebookXImpl getContent:info];
     
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
             NSString* ret = @"";
             if ([result objectForKey:@"postId"])
                 ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
-            listener->onSharedSuccess([ret UTF8String]);
+            if (FacebookX::listener) {
+                listener->onSharedSuccess([ret UTF8String]);
+            }
         } failedHandler:^(id<FBSDKSharing> sharer, NSError *error) {
-            listener->onSharedFailed([error.localizedDescription UTF8String]);
+            if (FacebookX::listener) {
+                listener->onSharedFailed([error.localizedDescription UTF8String]);
+            }
         } cancelHandler:^(id<FBSDKSharing> sharer) {
-            listener->onSharedCancel();
+            if (FacebookX::listener) {
+                listener->onSharedCancel();
+            }
         }];
     
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController]
@@ -151,7 +159,9 @@ namespace h102 {
                          if (FacebookX::listener) {
                              NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                              std::string cStringResult = [stringifiedResult UTF8String];
-                             listener->onAPI([_tag UTF8String], cStringResult);
+                             if (FacebookX::listener) {
+                                 listener->onAPI([_tag UTF8String], cStringResult);
+                             }
                          }
                      } else
                          NSLog(@"%@", error);
@@ -164,7 +174,9 @@ namespace h102 {
                          if (FacebookX::listener) {
                              NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                              std::string cStringResult = [stringifiedResult UTF8String];
-                             listener->onAPI([_tag UTF8String], cStringResult);
+                             if (FacebookX::listener) {
+                                 listener->onAPI([_tag UTF8String], cStringResult);
+                             }
                          }
                      }
                  }];
@@ -176,7 +188,9 @@ namespace h102 {
                          if (FacebookX::listener) {
                              NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
                              std::string cStringResult = [stringifiedResult UTF8String];
-                             listener->onAPI([_tag UTF8String], cStringResult);
+                             if (FacebookX::listener) {
+                                listener->onAPI([_tag UTF8String], cStringResult);
+                             }
                          }
                      }
                  }];
@@ -219,11 +233,17 @@ namespace h102 {
             NSString* ret = [NSString stringWithFormat:@"%@", result];
 //            if ([result objectForKey:@"postId"])
 //                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
-            listener->onSharedSuccess([ret UTF8String]);
+            if (FacebookX::listener) {
+                listener->onSharedSuccess([ret UTF8String]);
+            }
         } failedHandler:^(id<FBSDKSharing> sharer, NSError *error) {
-            listener->onSharedFailed([error.localizedDescription UTF8String]);
+            if (FacebookX::listener) {
+                listener->onSharedFailed([error.localizedDescription UTF8String]);
+            }
         } cancelHandler:^(id<FBSDKSharing> sharer) {
-            listener->onSharedCancel();
+            if (FacebookX::listener) {
+                listener->onSharedCancel();
+            }
         }];
         
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
@@ -273,7 +293,9 @@ namespace h102 {
                      if (jsonData) {
                          NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
                          FBInvitableFriendsInfo invitableFriends ([jsonString UTF8String]);
-                         listener->onRequestInvitableFriends(invitableFriends);
+                         if (FacebookX::listener) {
+                             listener->onRequestInvitableFriends(invitableFriends);
+                         }
                      } else {
                          NSLog(@"Got an error: %@", error);
                      }
@@ -310,14 +332,20 @@ namespace h102 {
                 
                 if (jsonData) {
                     NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-                    listener->onInviteFriendsWithInviteIdsResult(true, [jsonString UTF8String]);
+                    if (FacebookX::listener) {
+                        listener->onInviteFriendsWithInviteIdsResult(true, [jsonString UTF8String]);
+                    }
                 } else {
                     NSLog(@"Got an error: %@", error);
                 }                
             } failedHandler:^(FBSDKGameRequestDialog* sharer, NSError *error) {
-                listener->onInviteFriendsWithInviteIdsResult(false, [error.localizedDescription UTF8String]);
+                if (FacebookX::listener) {
+                    listener->onInviteFriendsWithInviteIdsResult(false, [error.localizedDescription UTF8String]);
+                }
             } cancelHandler:^(FBSDKGameRequestDialog* sharer) {
-                listener->onInviteFriendsWithInviteIdsResult(false, "Cancelled");
+                if (FacebookX::listener) {
+                    listener->onInviteFriendsWithInviteIdsResult(false, "Cancelled");
+                }
             }];
             
             [FBSDKGameRequestDialog showWithContent:content delegate:delegate];
