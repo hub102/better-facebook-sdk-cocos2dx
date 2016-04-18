@@ -48,9 +48,9 @@ namespace h102 {
             __initFromJSON(j);
     }
     
-    string FBGraphUser::getUserId() const {
-        return _fields.at(kGU_USERID);
-    }
+    // string FBGraphUser::getUserId() const {
+    //     return _fields.at(kGU_USERID);
+    // }
     
     std::string FBGraphUser::getName() const {
         return _fields.at(kGU_NAME);

@@ -9,9 +9,55 @@
 #include "jsb_h102_FacebookX.hpp"
 #include "cocos2d_specifics.hpp"
 
+#include "JSHelper.h"
 #include "FacebookX.hpp"
 
 using namespace h102;
+
+static JSContext* s_cx = nullptr;
+
+JSOBJECT* FBGraphUserToJS(JSContext* cx, const FBGraphUser& info) {
+    
+    JS_INIT_CONTEXT_FOR_UPDATE(cx);
+    
+    JSOBJECT* jsobj= JS_NEW_OBJECT(cx);
+    
+    for( std::pair<std::string, std::string> _p : info.getFields() ) {
+        addProperty( cx, jsobj, _p.first.c_str(), _p.second );
+    }
+    
+    return jsobj;
+}
+
+JSOBJECT* FBInvitableFriendsInfoToJS( JSContext* cx, const FBInvitableFriendsInfo& ifap ) {
+    
+    JS_INIT_CONTEXT_FOR_UPDATE(cx);
+    
+    // collection of FBGraphUser
+    JSOBJECT *jarr= JS_NEW_ARRAY(cx, ifap.getNumInvitationTokens());
+    
+    uint32_t index=0;
+    for( auto u= ifap.begin(); u!=ifap.end(); ++u ) {
+        JSOBJECT* gu= FBGraphUserToJS( cx, *(u) );
+        JS_ARRAY_SET( cx, jarr, index, gu );
+        index++;
+    }
+    
+    // cursor data
+    JSOBJECT* jsobj= JS_NEW_OBJECT(cx);
+    addProperty( cx, jsobj, "next_url", ifap.getNextURL() );
+    addProperty( cx, jsobj, "prev_url", ifap.getPrevURL() );
+    addProperty( cx, jsobj, "prev_cursor", ifap.getPrevCursor() );
+    addProperty( cx, jsobj, "next_cursor", ifap.getNextCursor() );
+    
+    // data
+    JSOBJECT* ret= JS_NEW_OBJECT(cx);
+    addProperty( cx, ret, "data", jarr );
+    addProperty( cx, ret, "paging", jsobj );
+    
+    return ret;
+}
+
 
 FBShareInfo map_to_FBShareInfo(const std::map<std::string, std::string>& dict)
 {
@@ -76,69 +122,160 @@ FBGraphStoryProperties map_to_FBGraphStoryProperties(const std::map<std::string,
     return properties;
 }
 
-// bool jsval_to_std_map_string_string(JSContext *cx, JS::HandleValue v, std::map<std::string,std::string> *ret)
-// {
-//     cocos2d::ValueMap value;
-//     bool ok = jsval_to_ccvaluemap(cx, v, &value);
-//     if (!ok)
-//     {
-//         return ok;
-//     }
-//     else
-//     {
-//         for (cocos2d::ValueMap::iterator it = value.begin(); it != value.end(); it++)
-//         {
-//             ret->insert(std::make_pair(it->first, it->second.asString()));
-//         }
-//     }
 
-//     return ok;
-// }
-
-// bool jsval_to_std_string(JSContext *cx, JS::HandleValue v, std::string* ret) {
-//     if(v.isString() || v.isNumber())
-//     {
-//         JSString *tmp = JS::ToString(cx, v);
-//         JSB_PRECONDITION3(tmp, cx, false, "Error processing arguments");
-
-//         JSStringWrapper str(tmp);
-//         *ret = str.get();
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// bool jsval_to_std_vector_string(JSContext *cx, JS::HandleValue vp, std::vector<std::string>* ret)
-// {
-//     JS::RootedObject jsobj(cx);
-//     bool ok = vp.isObject() && JS_ValueToObject( cx, vp, &jsobj );
-//     JSB_PRECONDITION3( ok, cx, false, "Error converting value to object");
-//     JSB_PRECONDITION3( jsobj && JS_IsArrayObject( cx, jsobj),  cx, false, "Object must be an array");
+class FacebookListenerJsHelper : public FacebookListener
+{
+private:
+    void invokeDelegate(std::string& fName, jsval dataVal[], int argc) {
+        if (!s_cx) {
+            return;
+        }
+        JSContext* cx = s_cx;
+        const char* func_name = fName.c_str();
+        
+        JS::RootedObject obj(cx, mJsDelegate);
+        JSAutoCompartment ac(cx, obj);
+        
+#if MOZJS_MAJOR_VERSION >= 31
+        bool hasAction;
+        JS::RootedValue retval(cx);
+        JS::RootedValue func_handle(cx);
+#elif MOZJS_MAJOR_VERSION >= 28
+        bool hasAction;
+        jsval retval;
+        JS::RootedValue func_handle(cx);
+#else
+        JSBool hasAction;
+        jsval retval;
+        jsval func_handle;
+#endif
+        
+        if (JS_HasProperty(cx, obj, func_name, &hasAction) && hasAction) {
+            if(!JS_GetProperty(cx, obj, func_name, &func_handle)) {
+                return;
+            }
+            if(func_handle == JSVAL_VOID) {
+                return;
+            }
+            
+#if MOZJS_MAJOR_VERSION >= 31
+            if (0 == argc) {
+                JS_CallFunctionName(cx, obj, func_name, JS::HandleValueArray::empty(), &retval);
+            } else {
+                JS_CallFunctionName(cx, obj, func_name, JS::HandleValueArray::fromMarkedLocation(argc, dataVal), &retval);
+            }
+#else
+            if (0 == argc) {
+                JS_CallFunctionName(cx, obj, func_name, 0, nullptr, &retval);
+            } else {
+                JS_CallFunctionName(cx, obj, func_name, argc, dataVal, &retval);
+            }
+#endif
+        }
+    }
     
-//     uint32_t len = 0;
-//     JS_GetArrayLength(cx, jsobj, &len);
-//     ret->reserve(len);
-//     for (uint32_t i=0; i < len; i++)
-//     {
-//         JS::RootedValue value(cx);
-//         if (JS_GetElement(cx, jsobj, i, &value))
-//         {
-//             if (value.isString())
-//             {
-//                 JSStringWrapper valueWapper(value.toString(), cx);
-//                 ret->push_back(valueWapper.get());
-//             }
-//             else
-//             {
-//                 JS_ReportError(cx, "not supported type in array");
-//                 return false;
-//             }
-//         }
-//     }
+private:
+    JSObject* mJsDelegate;
     
-//     return true;
-// }
+public:
+    void setJSDelegate(JSObject* delegate)
+    {
+        mJsDelegate = delegate;
+    }
+    
+    JSObject* getJSDelegate()
+    {
+        return mJsDelegate;
+    }
+    
+    FacebookListenerJsHelper() : mJsDelegate(0)
+    {
+    }
+    
+    virtual void onLogin(bool isLogin, const std::string& error)
+    {
+        std::string name("onLogin");
+        jsval dataVal[2];
+        dataVal[0] = BOOLEAN_TO_JSVAL(isLogin);
+        dataVal[1] = c_string_to_jsval(s_cx, error.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onSharedSuccess(const std::string& message)
+    {
+        std::string name("onSharedSuccess");
+        jsval dataVal[1];
+        dataVal[0] = c_string_to_jsval(s_cx, message.c_str());
+        invokeDelegate(name, dataVal, 1);
+    }
+    virtual void onSharedFailed(const std::string& message)
+    {
+        std::string name("onSharedFailed");
+        jsval dataVal[1];
+        dataVal[0] = c_string_to_jsval(s_cx, message.c_str());
+        invokeDelegate(name, dataVal, 1);
+    }
+    virtual void onSharedCancel()
+    {
+        std::string name("onSharedCancel");
+        jsval dataVal[0];
+        invokeDelegate(name, dataVal, 0);
+    }
+    virtual void onAPI(const std::string& tag, const std::string& jsonData)
+    {
+        std::string name("onAPI");
+        jsval dataVal[2];
+        dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
+        dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onPermission(bool isLogin, const std::string& error)
+    {
+        std::string name("onPermission");
+        jsval dataVal[2];
+        dataVal[0] = BOOLEAN_TO_JSVAL(isLogin);
+        dataVal[1] = c_string_to_jsval(s_cx, error.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onFetchFriends(bool ok, const std::string& msg)
+    {
+        std::string name("onFetchFriends");
+        jsval dataVal[2];
+        dataVal[0] = BOOLEAN_TO_JSVAL(ok);
+        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onInviteFriendsResult(bool ok, const std::string& msg)
+    {
+        std::string name("onInviteFriendsResult");
+        jsval dataVal[2];
+        dataVal[0] = BOOLEAN_TO_JSVAL(ok);
+        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onInviteFriendsWithInviteIdsResult(bool ok, const std::string& msg)
+    {
+        std::string name("onInviteFriendsWithInviteIdsResult");
+        jsval dataVal[2];
+        dataVal[0] = BOOLEAN_TO_JSVAL(ok);
+        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
+    virtual void onRequestInvitableFriends(const FBInvitableFriendsInfo& invitable_friends_and_pagination )
+    {
+        std::string name("onRequestInvitableFriends");
+        jsval dataVal[1];
+        dataVal[0] = OBJECT_TO_JSVAL(FBInvitableFriendsInfoToJS( s_cx, invitable_friends_and_pagination));
+        invokeDelegate(name, dataVal, 1);
+    }
+    virtual void onGetUserInfo(const FBGraphUser& userInfo )
+    {
+        std::string name("onGetUserInfo");
+        jsval dataVal[1];
+        dataVal[0] = OBJECT_TO_JSVAL(FBGraphUserToJS( s_cx, userInfo ));
+        invokeDelegate(name, dataVal, 1);
+    }
+};
+
 
 static bool js_is_native_obj(JSContext *cx, uint32_t argc, jsval* vp)
 {
@@ -177,6 +314,35 @@ bool js_h102_facebookX_constructor(JSContext *cx, uint32_t argc, jsval* vp)
 
 bool js_h102_facebookX_init(JSContext *cx, uint32_t argc, jsval *vp) {
 	return true;
+}
+
+bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp) {
+    std::cout << "Native setListener";
+    s_cx = cx;
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    
+    do {
+	    if (argc == 1) {
+	        
+	        if (!args.get(0).isObject())
+	        {
+	            ok = false;
+	        }
+	        JSObject *tmpObj = args.get(0).toObjectOrNull();
+	        
+	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_setListener : Error processing arguments");
+	        FacebookListenerJsHelper* lis = new FacebookListenerJsHelper();
+	        lis->setJSDelegate(tmpObj);
+	        FacebookX::setListener(lis);
+	        
+	        args.rval().setUndefined();
+	        return true;
+	    }
+	} while (0);
+
+    JS_ReportError(cx, "js_h102_facebookX_setListener : wrong number of arguments");
+    return false;
 }
 
 bool js_h102_facebookX_login(JSContext *cx, uint32_t argc, jsval *vp) {
@@ -288,7 +454,7 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 1) {
 			std::map<std::string, std::string> arg0;
-			ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+            ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_share : Error processing arguments");
 			FacebookX::share(map_to_FBShareInfo(arg0));
 			args.rval().setUndefined();
@@ -311,7 +477,7 @@ bool js_h102_facebookX_api(JSContext* cx, uint32_t argc, jsval *vp) {
 	        std::string method;
 	        ok &= jsval_to_std_string(cx, args.get(1), &method);
             std::map<std::string, std::string> param;
-	        ok &= jsval_to_std_map_string_string(cx, args.get(2), &param);
+	        ok &= h102::jsval_to_std_map_string_string(cx, args.get(2), &param);
 	        std::string tag;
 	        ok &= jsval_to_std_string(cx, args.get(3), &tag);
 	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_api : Error processing arguments");
@@ -327,7 +493,7 @@ bool js_h102_facebookX_api(JSContext* cx, uint32_t argc, jsval *vp) {
 	        std::string path;
 	        ok &= jsval_to_std_string(cx, args.get(0), &path);
             std::map<std::string, std::string> param;
-	        ok &= jsval_to_std_map_string_string(cx, args.get(1), &param);
+	        ok &= h102::jsval_to_std_map_string_string(cx, args.get(1), &param);
 	        std::string tag;
 	        ok &= jsval_to_std_string(cx, args.get(2), &tag);
 	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_api : Error processing arguments");
@@ -364,7 +530,7 @@ bool js_h102_facebookX_shareOpenGraphStory(JSContext *cx, uint32_t argc, jsval *
     do {
     	if (argc == 3) {
 			std::map<std::string, std::string> arg0;
-			ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+			ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_shareOpenGraphStory : Error processing arguments");
     		std::string actionType;
     		ok &= jsval_to_std_string(cx, args.get(1), &actionType);
@@ -388,7 +554,7 @@ bool js_h102_facebookX_canPresentWithFBApp(JSContext *cx, uint32_t argc, jsval *
     do {
 	    if (argc == 1) {
 	        std::map<std::string, std::string> arg0;
-	        ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+	        ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_canPresentWithFBApp : Error processing arguments");
 	        bool canPresent = FacebookX::canPresentWithFBApp(map_to_FBShareInfo(arg0));
 
@@ -410,7 +576,7 @@ bool js_h102_facebookX_requestInvitableFriends(JSContext *cx, uint32_t argc, jsv
     do {
     	if (argc == 1) {
 			std::map<std::string, std::string> arg0;
-			ok &= jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+			ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_requestInvitableFriends : Error processing arguments");
 			FacebookX::requestInvitableFriends(arg0);
 			args.rval().setUndefined();
@@ -496,6 +662,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("inviteFriendsWithInviteIds", js_h102_facebookX_inviteFriendsWithInviteIds, 0, 
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("setListener", js_h102_facebookX_setListener, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 	};
 
 	jsb_h102_facebookX_prototype = JS_InitClass(

@@ -24,6 +24,8 @@ using namespace std;
 #import <iostream>
 
 namespace h102 {
+    FBSDKLoginManager* loginManager = NULL;
+    
 	void FacebookX::login() {
         vector<string> permissions;
         permissions.push_back(h102::FB_PERM_READ_PUBLIC_PROFILE);
@@ -33,7 +35,8 @@ namespace h102 {
     }
   
   	void FacebookX::login( std::vector<std::string>& permissions ) {
-		FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
+        cout << "Native: gọi hàm login";
+        loginManager = [[FBSDKLoginManager alloc] init];
 	
 		NSMutableArray *permissionArray = [NSMutableArray new];
 		for (auto str : permissions) {
@@ -41,7 +44,7 @@ namespace h102 {
 	  		[permissionArray addObject:nsstr];
 		}
 	
-		[login logInWithReadPermissions: permissionArray
+		[loginManager logInWithReadPermissions: permissionArray
 				fromViewController:[UIViewController topViewController]
 							handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
 			if (error) {
@@ -49,11 +52,13 @@ namespace h102 {
 					listener->onLogin(false, error.localizedDescription.UTF8String);
 				}
 			} else if (result.isCancelled) {
+                cout << "Native callback: cancel rồi";
 				if (FacebookX::listener) {
 				   	listener->onLogin(false, "Cancelled");
 				}
 		   	} else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
+                cout << "Native callback: ok rồi";
                 if (FacebookX::listener) {
                     listener->onLogin(true, "LoggedIn");
                 }
@@ -62,10 +67,12 @@ namespace h102 {
   	}
 
     std::string FacebookX::getAccessToken() {
+        cout << "Test nữa mà";
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
     }
     
     std::string FacebookX::getUserID() {
+        cout << "Test thôi mà";
         return [[[FBSDKAccessToken currentAccessToken] userID] UTF8String];
     }
     
@@ -74,7 +81,8 @@ namespace h102 {
     }
     
     void FacebookX::logout() {
-        [[[FBSDKLoginManager alloc] init] logOut];
+        [loginManager logOut];
+        loginManager = NULL;
     }
 
 	vector<string> FacebookX::getPermissionList() {
