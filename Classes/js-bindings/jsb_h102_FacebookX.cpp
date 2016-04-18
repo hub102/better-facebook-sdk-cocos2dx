@@ -346,6 +346,7 @@ bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp) {
 }
 
 bool js_h102_facebookX_login(JSContext *cx, uint32_t argc, jsval *vp) {
+	std::cout << "Binding login";
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	bool ok = true;
 
@@ -647,7 +648,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 		JS_FN("login", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, 
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("getUserID", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getUserID", js_h102_facebookX_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("isLoggedIn", js_h102_facebookX_isLoggedIn, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("logout", js_h102_facebookX_logout, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, 
