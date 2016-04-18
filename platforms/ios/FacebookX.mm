@@ -35,7 +35,6 @@ namespace h102 {
     }
   
   	void FacebookX::login( std::vector<std::string>& permissions ) {
-        cout << "Native: gọi hàm login";
         loginManager = [[FBSDKLoginManager alloc] init];
 	
 		NSMutableArray *permissionArray = [NSMutableArray new];
@@ -52,13 +51,11 @@ namespace h102 {
 					listener->onLogin(false, error.localizedDescription.UTF8String);
 				}
 			} else if (result.isCancelled) {
-                cout << "Native callback: cancel rồi";
 				if (FacebookX::listener) {
 				   	listener->onLogin(false, "Cancelled");
 				}
 		   	} else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
-                cout << "Native callback: ok rồi";
                 if (FacebookX::listener) {
                     listener->onLogin(true, "LoggedIn");
                 }
@@ -67,12 +64,10 @@ namespace h102 {
   	}
 
     std::string FacebookX::getAccessToken() {
-        cout << "Test nữa mà";
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
     }
     
     std::string FacebookX::getUserID() {
-        cout << "Test thôi mà";
         return [[[FBSDKAccessToken currentAccessToken] userID] UTF8String];
     }
     

@@ -317,7 +317,6 @@ bool js_h102_facebookX_init(JSContext *cx, uint32_t argc, jsval *vp) {
 }
 
 bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp) {
-    std::cout << "Native setListener";
     s_cx = cx;
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
@@ -346,7 +345,6 @@ bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp) {
 }
 
 bool js_h102_facebookX_login(JSContext *cx, uint32_t argc, jsval *vp) {
-	std::cout << "Binding login";
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	bool ok = true;
 
