@@ -26,7 +26,7 @@ using namespace std;
 namespace h102 {
     FBSDKLoginManager* loginManager = NULL;
     
-	void FacebookX::login() {
+    void FacebookX::login() {
         vector<string> permissions;
         permissions.push_back(h102::FB_PERM_READ_PUBLIC_PROFILE);
         permissions.push_back(h102::FB_PERM_READ_EMAIL);
@@ -34,34 +34,34 @@ namespace h102 {
         login(permissions);
     }
   
-  	void FacebookX::login( std::vector<std::string>& permissions ) {
+    void FacebookX::login( std::vector<std::string>& permissions ) {
         loginManager = [[FBSDKLoginManager alloc] init];
-	
-		NSMutableArray *permissionArray = [NSMutableArray new];
-		for (auto str : permissions) {
-	  		id nsstr = [NSString stringWithUTF8String:str.c_str()];
-	  		[permissionArray addObject:nsstr];
-		}
-	
-		[loginManager logInWithReadPermissions: permissionArray
-				fromViewController:[UIViewController topViewController]
-							handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
-			if (error) {
-				if (FacebookX::listener) {
-					listener->onLogin(false, error.localizedDescription.UTF8String);
-				}
-			} else if (result.isCancelled) {
-				if (FacebookX::listener) {
-				   	listener->onLogin(false, "Cancelled");
-				}
-		   	} else {
+    
+        NSMutableArray *permissionArray = [NSMutableArray new];
+        for (auto str : permissions) {
+            id nsstr = [NSString stringWithUTF8String:str.c_str()];
+            [permissionArray addObject:nsstr];
+        }
+    
+        [loginManager logInWithReadPermissions: permissionArray
+                fromViewController:[UIViewController topViewController]
+                            handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+            if (error) {
+                if (FacebookX::listener) {
+                    listener->onLogin(false, error.localizedDescription.UTF8String);
+                }
+            } else if (result.isCancelled) {
+                if (FacebookX::listener) {
+                    listener->onLogin(false, "Cancelled");
+                }
+            } else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
                 if (FacebookX::listener) {
                     listener->onLogin(true, "LoggedIn");
                 }
-			}
-		}];
-  	}
+            }
+        }];
+    }
 
     std::string FacebookX::getAccessToken() {
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
@@ -80,19 +80,19 @@ namespace h102 {
         loginManager = NULL;
     }
 
-	vector<string> FacebookX::getPermissionList() {
-    	vector<string> permissions;
+    vector<string> FacebookX::getPermissionList() {
+        vector<string> permissions;
     
-	    FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
-	    if (token) {
-	      NSSet* permissionSet = [token permissions];
-	      for (NSString* p in permissionSet) {
-	        permissions.push_back([p UTF8String]);
-	      }
-	    }
-	    
-	    return permissions;
-  	}
+        FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+        if (token) {
+          NSSet* permissionSet = [token permissions];
+          for (NSString* p in permissionSet) {
+            permissions.push_back([p UTF8String]);
+          }
+        }
+        
+        return permissions;
+    }
   
     void FacebookX::share(const FBShareInfo& info) {
         if (info.type == FB_NONE)
@@ -141,6 +141,21 @@ namespace h102 {
             FacebookX::api(path, "", params, tag);
     }
     
+    NSString* toJSONString(id data)
+    {
+        NSError *error; 
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
+                                                           options:NSJSONWritingPrettyPrinted // Pass 0 if you don't care about the readability of the generated string
+                                                             error:&error];
+
+        if (! jsonData) {
+            NSLog(@"Got an error: %@", error);
+            return @"{}";
+        } else {
+            return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        }
+    }
+
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag)
     {
         if ([FBSDKAccessToken currentAccessToken]) {
@@ -160,7 +175,7 @@ namespace h102 {
                      if (!error) {
                          NSLog(@"API executed OK!!");
                          if (FacebookX::listener) {
-                             NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
+                             NSString* stringifiedResult = toJSONString(result);
                              std::string cStringResult = [stringifiedResult UTF8String];
                              if (FacebookX::listener) {
                                  listener->onAPI([_tag UTF8String], cStringResult);
@@ -175,7 +190,7 @@ namespace h102 {
                      if (!error) {
                          NSLog(@"API executed OK!!");
                          if (FacebookX::listener) {
-                             NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
+                             NSString* stringifiedResult = toJSONString(result);
                              std::string cStringResult = [stringifiedResult UTF8String];
                              if (FacebookX::listener) {
                                  listener->onAPI([_tag UTF8String], cStringResult);
@@ -189,7 +204,7 @@ namespace h102 {
                      if (!error) {
                          NSLog(@"API executed OK!!, tag = %@", _tag);
                          if (FacebookX::listener) {
-                             NSString* stringifiedResult = [NSString stringWithFormat:@"%@", result];
+                             NSString* stringifiedResult = toJSONString(result);
                              std::string cStringResult = [stringifiedResult UTF8String];
                              if (FacebookX::listener) {
                                 listener->onAPI([_tag UTF8String], cStringResult);
