@@ -47,56 +47,57 @@ namespace h102 {
         return [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
     }
     
-	void FacebookX::login() {
+    void FacebookX::login() {
         vector<string> permissions;
         permissions.push_back(h102::FB_PERM_READ_PUBLIC_PROFILE);
         permissions.push_back(h102::FB_PERM_READ_EMAIL);
         permissions.push_back(h102::FB_PERM_READ_USER_FRIENDS);
         login(permissions);
     }
-  
-  	void FacebookX::login( std::vector<std::string>& permissions ) {
-        loginManager = [[FBSDKLoginManager alloc] init];
-	
-		NSMutableArray *permissionArray = [NSMutableArray new];
-		for (auto str : permissions) {
-	  		id nsstr = [NSString stringWithUTF8String:str.c_str()];
-	  		[permissionArray addObject:nsstr];
-		}
-	
-		[loginManager logInWithReadPermissions: permissionArray
-				fromViewController:[UIViewController topViewController]
-							handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
-			if (error) {
-				if (FacebookX::listener) {
-					listener->onLogin(false, error.localizedDescription.UTF8String);
-				}
-			} else if (result.isCancelled) {
-				if (FacebookX::listener) {
-				   	listener->onLogin(false, "Cancelled");
-				}
-		   	} else {
-                [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
-                if (FacebookX::listener) {
-                    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/" parameters:nil]
-                     startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-                         if (!error) {
-                             if (FacebookX::listener) {
-                                 NSString* myName = [result objectForKey:@"name"];
-                                 NSString* myID = [result objectForKey:@"id"];
-                                 FBGraphUser myInfo = FBGraphUser();
-                                 myInfo.setField(FBGraphUser::kGU_NAME, std::string([myName UTF8String]));
-                                 myInfo.setField(FBGraphUser::kGU_USERID, std::string([myID UTF8String]));
-                                 listener->onGetUserInfo(myInfo);
-                             }
-                         }
-                     }];
-                    listener->onLogin(true, "LoggedIn");
-                }
-			}
-		}];
-  	}
-
+    
+    void FacebookX::login( std::vector<std::string>& permissions ) {
+        if (!loginManager) {
+            loginManager = [[FBSDKLoginManager alloc] init];
+        }
+        NSMutableArray *permissionArray = [NSMutableArray new];
+        for (auto str : permissions) {
+            id nsstr = [NSString stringWithUTF8String:str.c_str()];
+            [permissionArray addObject:nsstr];
+        }
+        
+        [loginManager logInWithReadPermissions: permissionArray
+                            fromViewController:[UIViewController topViewController]
+                                       handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+                                           if (error) {
+                                               if (FacebookX::listener) {
+                                                   listener->onLogin(false, error.localizedDescription.UTF8String);
+                                               }
+                                           } else if (result.isCancelled) {
+                                               if (FacebookX::listener) {
+                                                   listener->onLogin(false, "Cancelled");
+                                               }
+                                           } else {
+                                               [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
+                                               if (FacebookX::listener) {
+                                                   [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/" parameters:nil]
+                                                    startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+                                                        if (!error) {
+                                                            if (FacebookX::listener) {
+                                                                NSString* myName = [result objectForKey:@"name"];
+                                                                NSString* myID = [result objectForKey:@"id"];
+                                                                FBGraphUser myInfo = FBGraphUser();
+                                                                myInfo.setField(FBGraphUser::kGU_NAME, std::string([myName UTF8String]));
+                                                                myInfo.setField(FBGraphUser::kGU_USERID, std::string([myID UTF8String]));
+                                                                listener->onGetUserInfo(myInfo);
+                                                            }
+                                                        }
+                                                    }];
+                                                   listener->onLogin(true, "LoggedIn");
+                                               }
+                                           }
+                                       }];
+    }
+    
     std::string FacebookX::getAccessToken() {
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
     }
@@ -114,30 +115,32 @@ namespace h102 {
     }
     
     void FacebookX::logout() {
+        if (!loginManager) {
+            loginManager = [[FBSDKLoginManager alloc] init];
+        }
         [loginManager logOut];
-        loginManager = NULL;
     }
-
-	vector<string> FacebookX::getPermissionList() {
-    	vector<string> permissions;
     
-	    FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
-	    if (token) {
-	      NSSet* permissionSet = [token permissions];
-	      for (NSString* p in permissionSet) {
-	        permissions.push_back([p UTF8String]);
-	      }
-	    }
-	    
-	    return permissions;
-  	}
-  
+    vector<string> FacebookX::getPermissionList() {
+        vector<string> permissions;
+        
+        FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+        if (token) {
+            NSSet* permissionSet = [token permissions];
+            for (NSString* p in permissionSet) {
+                permissions.push_back([p UTF8String]);
+            }
+        }
+        
+        return permissions;
+    }
+    
     void FacebookX::share(const FBShareInfo& info) {
         if (info.type == FB_NONE)
             return;
         
         id<FBSDKSharingContent> content = [FacebookXImpl getContent:info];
-    
+        
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
             NSString* ret = @"";
             if ([result objectForKey:@"postId"])
@@ -154,7 +157,7 @@ namespace h102 {
                 listener->onSharedCancel();
             }
         }];
-    
+        
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController]
                                      withContent:content
                                         delegate:delegate];
@@ -176,7 +179,7 @@ namespace h102 {
     }
     
     void FacebookX::api(const std::string& path, const FBAPIParam& params, const std::string& tag) {
-            FacebookX::api(path, "", params, tag);
+        FacebookX::api(path, "", params, tag);
     }
     
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag)
@@ -194,7 +197,7 @@ namespace h102 {
             
             if (![_method  isEqualToString:@""] && _params.count > 0) {
                 [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params HTTPMethod:_method]
-                    startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+                 startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                      if (!error) {
                          NSLog(@"API executed OK!!");
                          if (FacebookX::listener) {
@@ -230,7 +233,7 @@ namespace h102 {
                              NSString* stringifiedResult = toJSONString(result);
                              std::string cStringResult = [stringifiedResult UTF8String];
                              if (FacebookX::listener) {
-                                listener->onAPI([_tag UTF8String], cStringResult);
+                                 listener->onAPI([_tag UTF8String], cStringResult);
                              }
                          }
                      }
@@ -272,8 +275,8 @@ namespace h102 {
         
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
             NSString* ret = [NSString stringWithFormat:@"%@", result];
-//            if ([result objectForKey:@"postId"])
-//                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
+            //            if ([result objectForKey:@"postId"])
+            //                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
             if (FacebookX::listener) {
                 listener->onSharedSuccess([ret UTF8String]);
             }
@@ -289,7 +292,7 @@ namespace h102 {
         
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
     }
-
+    
     void FacebookX::shareEncodedOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
         NSString* objectType = [NSString stringWithUTF8String:properties.type.c_str()];
         NSString* title = [NSString stringWithUTF8String:properties.title.c_str()];
@@ -331,8 +334,8 @@ namespace h102 {
         
         FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
             NSString* ret = [NSString stringWithFormat:@"%@", result];
-//            if ([result objectForKey:@"postId"])
-//                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
+            //            if ([result objectForKey:@"postId"])
+            //                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
             if (FacebookX::listener) {
                 listener->onSharedSuccess([ret UTF8String]);
             }
@@ -348,7 +351,7 @@ namespace h102 {
         
         [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
     }
-
+    
     void FacebookX::requestInvitableFriends(const FBAPIParam &params) {
         NSMutableDictionary* _params = [NSMutableDictionary dictionary];
         if (params.size() > 0) {
@@ -404,7 +407,7 @@ namespace h102 {
              }
              else
                  NSLog(@"%@", error);
-          }];
+         }];
     }
     
     void FacebookX::inviteFriendsWithInviteIds(const std::vector<std::string> &invite_ids, const std::string &title, const std::string &invite_text) {
@@ -437,7 +440,7 @@ namespace h102 {
                     }
                 } else {
                     NSLog(@"Got an error: %@", error);
-                }                
+                }
             } failedHandler:^(FBSDKGameRequestDialog* sharer, NSError *error) {
                 if (FacebookX::listener) {
                     listener->onInviteFriendsWithInviteIdsResult(false, [error.localizedDescription UTF8String]);
