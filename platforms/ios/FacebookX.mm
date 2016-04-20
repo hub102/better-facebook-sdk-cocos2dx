@@ -26,6 +26,27 @@ using namespace std;
 namespace h102 {
     FBSDKLoginManager* loginManager = NULL;
     
+    NSString* toJSONString(id data)
+    {
+        NSError *error;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
+                                                           options:0 // Pass 0 if you don't care about the readability of the generated string
+                                                             error:&error];
+        
+        if (! jsonData) {
+            NSLog(@"Got an error: %@", error);
+            return @"{}";
+        } else {
+            return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        }
+    }
+    
+    NSString* toDecodedString(NSString* encodedString)
+    {
+        NSData* decodedData = [[NSData alloc] initWithBase64EncodedString:encodedString options:0];
+        return [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
+    }
+    
 	void FacebookX::login() {
         vector<string> permissions;
         permissions.push_back(h102::FB_PERM_READ_PUBLIC_PROFILE);
@@ -57,6 +78,19 @@ namespace h102 {
 		   	} else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
                 if (FacebookX::listener) {
+                    [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/" parameters:nil]
+                     startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+                         if (!error) {
+                             if (FacebookX::listener) {
+                                 NSString* myName = [result objectForKey:@"name"];
+                                 NSString* myID = [result objectForKey:@"id"];
+                                 FBGraphUser myInfo = FBGraphUser();
+                                 myInfo.setField(FBGraphUser::kGU_NAME, std::string([myName UTF8String]));
+                                 myInfo.setField(FBGraphUser::kGU_USERID, std::string([myID UTF8String]));
+                                 listener->onGetUserInfo(myInfo);
+                             }
+                         }
+                     }];
                     listener->onLogin(true, "LoggedIn");
                 }
 			}
@@ -69,6 +103,10 @@ namespace h102 {
     
     std::string FacebookX::getUserID() {
         return [[[FBSDKAccessToken currentAccessToken] userID] UTF8String];
+    }
+    
+    std::string FacebookX::getName() {
+        return "";
     }
     
     bool FacebookX::isLoggedIn() {
@@ -141,27 +179,6 @@ namespace h102 {
             FacebookX::api(path, "", params, tag);
     }
     
-    NSString* toJSONString(id data)
-    {
-        NSError *error; 
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:data
-                                                           options:NSJSONWritingPrettyPrinted // Pass 0 if you don't care about the readability of the generated string
-                                                             error:&error];
-
-        if (! jsonData) {
-            NSLog(@"Got an error: %@", error);
-            return @"{}";
-        } else {
-            return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        }
-    }
-
-    NSString* toDecodedString(NSString* encodedString) 
-    {
-        NSData* decodedData = [[NSData alloc] initWithBase64EncodedString:encodedString options:0];
-        return [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
-    }
-
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag)
     {
         if ([FBSDKAccessToken currentAccessToken]) {

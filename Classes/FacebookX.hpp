@@ -71,7 +71,7 @@ namespace h102 {
         
     public:
         
-        // konstants for Graph User
+        // constants for Graph User
         static const std::string kGU_USERID;
         static const std::string kGU_NAME;
         static const std::string kGU_FIRST_NAME;
@@ -202,8 +202,7 @@ namespace h102 {
         virtual void onRequestInvitableFriends( const FBInvitableFriendsInfo& friends ) = 0;
         virtual void onInviteFriendsWithInviteIdsResult( bool result, const std::string& msg )= 0;
         virtual void onInviteFriendsResult( bool result, const std::string& msg )= 0;
-        
-        //    virtual void onGetUserInfo( const FBGraphUser& userInfo ) = 0;
+        virtual void onGetUserInfo( const FBGraphUser& userInfo ) = 0;
     };
   
     class FacebookX {
@@ -217,6 +216,7 @@ namespace h102 {
         static void login( std::vector<std::string>& permissions );
         static std::string getAccessToken();
         static std::string getUserID();
+        static std::string getName();
         static bool isLoggedIn();
         static void logout();
         static std::vector<std::string> getPermissionList();

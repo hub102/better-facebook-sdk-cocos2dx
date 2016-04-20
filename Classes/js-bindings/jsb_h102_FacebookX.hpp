@@ -22,6 +22,7 @@ bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_login(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_getAccessToken(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_getUserID(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_h102_facebookX_getName(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_isLoggedIn(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_logout(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_getPermissionList(JSContext *cx, uint32_t argc, jsval *vp);

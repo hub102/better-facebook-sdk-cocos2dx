@@ -38,6 +38,10 @@ namespace h102 {
     const string FBGraphUser::kGU_STR_TRUE = "true";
     const string FBGraphUser::kGU_STR_FALSE = "false";
     
+    FBGraphUser::FBGraphUser() {
+        
+    }
+    
     FBGraphUser::FBGraphUser(const Json& json) {
         __initFromJSON(json);
     }

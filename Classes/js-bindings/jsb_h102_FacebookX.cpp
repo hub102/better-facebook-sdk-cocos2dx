@@ -401,6 +401,22 @@ bool js_h102_facebookX_getUserID(JSContext *cx, uint32_t argc, jsval *vp) {
     return false;	
 }
 
+bool js_h102_facebookX_getName(JSContext *cx, uint32_t argc, jsval *vp) {
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    do {
+        if (argc == 0) {
+            std::string ret = FacebookX::getName();
+            jsval jsret = JSVAL_NULL;
+            jsret = std_string_to_jsval(cx, ret);
+            args.rval().set(jsret);
+            return true;
+        }
+    } while (0);
+
+    JS_ReportError(cx, "js_h102_facebookX_getName : wrong number of arguments");
+    return false;   
+}
+
 bool js_h102_facebookX_isLoggedIn(JSContext *cx, uint32_t argc, jsval *vp) {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 	do {
@@ -647,6 +663,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, 
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserID", js_h102_facebookX_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getName", js_h102_facebookX_getName, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("isLoggedIn", js_h102_facebookX_isLoggedIn, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("logout", js_h102_facebookX_logout, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, 
