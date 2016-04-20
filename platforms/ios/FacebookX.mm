@@ -26,7 +26,7 @@ using namespace std;
 namespace h102 {
     FBSDKLoginManager* loginManager = NULL;
     
-    void FacebookX::login() {
+	void FacebookX::login() {
         vector<string> permissions;
         permissions.push_back(h102::FB_PERM_READ_PUBLIC_PROFILE);
         permissions.push_back(h102::FB_PERM_READ_EMAIL);
@@ -34,34 +34,34 @@ namespace h102 {
         login(permissions);
     }
   
-    void FacebookX::login( std::vector<std::string>& permissions ) {
+  	void FacebookX::login( std::vector<std::string>& permissions ) {
         loginManager = [[FBSDKLoginManager alloc] init];
-    
-        NSMutableArray *permissionArray = [NSMutableArray new];
-        for (auto str : permissions) {
-            id nsstr = [NSString stringWithUTF8String:str.c_str()];
-            [permissionArray addObject:nsstr];
-        }
-    
-        [loginManager logInWithReadPermissions: permissionArray
-                fromViewController:[UIViewController topViewController]
-                            handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
-            if (error) {
-                if (FacebookX::listener) {
-                    listener->onLogin(false, error.localizedDescription.UTF8String);
-                }
-            } else if (result.isCancelled) {
-                if (FacebookX::listener) {
-                    listener->onLogin(false, "Cancelled");
-                }
-            } else {
+	
+		NSMutableArray *permissionArray = [NSMutableArray new];
+		for (auto str : permissions) {
+	  		id nsstr = [NSString stringWithUTF8String:str.c_str()];
+	  		[permissionArray addObject:nsstr];
+		}
+	
+		[loginManager logInWithReadPermissions: permissionArray
+				fromViewController:[UIViewController topViewController]
+							handler:^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+			if (error) {
+				if (FacebookX::listener) {
+					listener->onLogin(false, error.localizedDescription.UTF8String);
+				}
+			} else if (result.isCancelled) {
+				if (FacebookX::listener) {
+				   	listener->onLogin(false, "Cancelled");
+				}
+		   	} else {
                 [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
                 if (FacebookX::listener) {
                     listener->onLogin(true, "LoggedIn");
                 }
-            }
-        }];
-    }
+			}
+		}];
+  	}
 
     std::string FacebookX::getAccessToken() {
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
@@ -80,19 +80,19 @@ namespace h102 {
         loginManager = NULL;
     }
 
-    vector<string> FacebookX::getPermissionList() {
-        vector<string> permissions;
+	vector<string> FacebookX::getPermissionList() {
+    	vector<string> permissions;
     
-        FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
-        if (token) {
-          NSSet* permissionSet = [token permissions];
-          for (NSString* p in permissionSet) {
-            permissions.push_back([p UTF8String]);
-          }
-        }
-        
-        return permissions;
-    }
+	    FBSDKAccessToken* token = [FBSDKAccessToken currentAccessToken];
+	    if (token) {
+	      NSSet* permissionSet = [token permissions];
+	      for (NSString* p in permissionSet) {
+	        permissions.push_back([p UTF8String]);
+	      }
+	    }
+	    
+	    return permissions;
+  	}
   
     void FacebookX::share(const FBShareInfo& info) {
         if (info.type == FB_NONE)
@@ -154,6 +154,12 @@ namespace h102 {
         } else {
             return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
         }
+    }
+
+    NSString* toDecodedString(NSString* encodedString) 
+    {
+        NSData* decodedData = [[NSData alloc] initWithBase64EncodedString:encodedString options:0];
+        return [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
     }
 
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag)
@@ -240,6 +246,65 @@ namespace h102 {
         action.actionType = [NSString stringWithUTF8String:actionType.c_str()];
         
         NSString* _previewPropertyName = [NSString stringWithUTF8String:previewPropertyName.c_str()];
+        
+        [action setObject:object forKey:_previewPropertyName];
+        
+        FBSDKShareOpenGraphContent* content = [[FBSDKShareOpenGraphContent alloc] init];
+        content.action = action;
+        content.previewPropertyName = _previewPropertyName;
+        
+        FacebookShareDelegate* delegate = [[FacebookShareDelegate alloc] initWithSucceedHandler:^(id<FBSDKSharing> sharer, NSDictionary *result) {
+            NSString* ret = [NSString stringWithFormat:@"%@", result];
+//            if ([result objectForKey:@"postId"])
+//                ret = [ret stringByAppendingString:[NSString stringWithFormat:@"{\"postId\":\"%@\"}", [result objectForKey:@"postId"]]];
+            if (FacebookX::listener) {
+                listener->onSharedSuccess([ret UTF8String]);
+            }
+        } failedHandler:^(id<FBSDKSharing> sharer, NSError *error) {
+            if (FacebookX::listener) {
+                listener->onSharedFailed([error.localizedDescription UTF8String]);
+            }
+        } cancelHandler:^(id<FBSDKSharing> sharer) {
+            if (FacebookX::listener) {
+                listener->onSharedCancel();
+            }
+        }];
+        
+        [FBSDKShareDialog showFromViewController:[UIViewController topViewController] withContent:content delegate:delegate];
+    }
+
+    void FacebookX::shareEncodedOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
+        NSString* objectType = [NSString stringWithUTF8String:properties.type.c_str()];
+        NSString* title = [NSString stringWithUTF8String:properties.title.c_str()];
+        NSString* description = [NSString stringWithUTF8String:properties.description.c_str()];
+        NSString* image = [NSString stringWithUTF8String:properties.image.c_str()];
+        NSString* url = [NSString stringWithUTF8String:properties.url.c_str()];
+        NSString* _actionType = [NSString stringWithUTF8String:actionType.c_str()];
+        _actionType = toDecodedString(_actionType);
+        NSString* _previewPropertyName = [NSString stringWithUTF8String:previewPropertyName.c_str()];
+        _previewPropertyName = toDecodedString(_previewPropertyName);
+        
+        objectType = toDecodedString(objectType);
+        title = toDecodedString(title);
+        description = toDecodedString(description);
+        image = toDecodedString(image);
+        url = toDecodedString(url);
+        
+        NSURL *imageURL = [NSURL URLWithString:image];
+        FBSDKSharePhoto *photo = [FBSDKSharePhoto photoWithImageURL:imageURL userGenerated:NO];
+        
+        NSDictionary* _properties = @{
+                                      @"og:type": objectType,
+                                      @"og:title": title,
+                                      @"og:description": description,
+                                      @"og:image": photo,
+                                      @"og:url": url
+                                      };
+        
+        FBSDKShareOpenGraphObject* object = [FBSDKShareOpenGraphObject objectWithProperties:_properties];
+        
+        FBSDKShareOpenGraphAction* action = [[FBSDKShareOpenGraphAction alloc] init];
+        action.actionType = _actionType;
         
         [action setObject:object forKey:_previewPropertyName];
         

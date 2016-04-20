@@ -521,7 +521,7 @@ bool js_h102_facebookX_api(JSContext* cx, uint32_t argc, jsval *vp) {
     return false;
 }
 
-bool js_h102_facebookX_shareOpenGraphStory(JSContext *cx, uint32_t argc, jsval *vp)
+bool js_h102_facebookX_shareEncodedOpenGraphStory(JSContext *cx, uint32_t argc, jsval *vp)
 {
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
@@ -530,12 +530,12 @@ bool js_h102_facebookX_shareOpenGraphStory(JSContext *cx, uint32_t argc, jsval *
     	if (argc == 3) {
 			std::map<std::string, std::string> arg0;
 			ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
-			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_shareOpenGraphStory : Error processing arguments");
+			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_shareEncodedOpenGraphStory : Error processing arguments");
     		std::string actionType;
     		ok &= jsval_to_std_string(cx, args.get(1), &actionType);
 	        std::string tag;
 	        ok &= jsval_to_std_string(cx, args.get(2), &tag);
-			FacebookX::shareOpenGraphStory(map_to_FBGraphStoryProperties(arg0), actionType, tag);
+			FacebookX::shareEncodedOpenGraphStory(map_to_FBGraphStoryProperties(arg0), actionType, tag);
 			args.rval().setUndefined();
 			return true;
     	}
@@ -653,7 +653,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("share", js_h102_facebookX_share, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("api", js_h102_facebookX_api, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("shareOpenGraphStory", js_h102_facebookX_shareOpenGraphStory, 
+		JS_FN("shareEncodedOpenGraphStory", js_h102_facebookX_shareEncodedOpenGraphStory, 
 			0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("canPresentWithFBApp", js_h102_facebookX_canPresentWithFBApp, 0, 
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -687,7 +687,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 	}
 }
 
-void register_all_h102(JSContext* cx, JS::HandleObject obj) {
+void register_all_h102_facebookX(JSContext* cx, JS::HandleObject obj) {
 	JS::RootedObject ns(cx);
 	get_or_create_js_obj(cx, obj, "h102", &ns);
 

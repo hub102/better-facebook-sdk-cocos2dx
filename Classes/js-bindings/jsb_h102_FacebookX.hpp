@@ -27,7 +27,7 @@ bool js_h102_facebookX_logout(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_getPermissionList(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_api(JSContext *cx, uint32_t argc, jsval *vp);
-bool js_h102_facebookX_shareOpenGraphStory(JSContext *cx, uint32_t argc, jsval *vp);
+bool js_h102_facebookX_shareEncodedOpenGraphStory(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_canPresentWithFBApp(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_requestInvitableFriends(JSContext *cx, uint32_t argc, jsval *vp);
 bool js_h102_facebookX_inviteFriendsWithInviteIds(JSContext *cx, uint32_t argc, jsval *vp);
