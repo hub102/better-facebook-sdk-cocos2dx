@@ -21,6 +21,4 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
-    compile files('libs/sdkbox.jar')
-    compile files('libs/PluginFacebook.jar')
 }

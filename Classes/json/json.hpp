@@ -80,6 +80,29 @@ Class @ref nlohmann::basic_json is a good entry point for the documentation.
     using ssize_t = SSIZE_T;
 #endif
 
+#ifdef __ANDROID__
+    // Workaround for Android NDK builds (version r10e) that does not support std::to_string and std::strold so far
+    namespace std
+    {
+        template <typename T>
+        std::string to_string(T Value)
+        {
+            std::ostringstream TempStream;
+            TempStream << Value;
+            return TempStream.str();
+        }
+        
+        inline long double strtold(const char * str, char ** str_end)
+        {
+            return strtod(str, str_end);
+        }       
+
+        inline float strtof (const char* str, char** str_end) {
+            return strtod(str, str_end);
+        }
+    }
+#endif
+
 /*!
 @brief namespace for Niels Lohmann
 @see https://github.com/nlohmann
