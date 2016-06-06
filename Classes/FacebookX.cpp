@@ -23,6 +23,10 @@ namespace h102 {
     void FacebookX::setListener(h102::FacebookListener *listener) {
         FacebookX::listener = listener;
     }
+
+    FacebookListener* FacebookX::getListener() {
+        return FacebookX::listener;
+    }
     
 #pragma make FBGraphUser
     const string FBGraphUser::kGU_USERID = "id";

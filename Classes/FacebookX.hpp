@@ -211,6 +211,7 @@ namespace h102 {
     public:
         static void init();
         static void setListener(FacebookListener* listener);
+        static FacebookListener* getListener();
         
         static void login();
         static void login( std::vector<std::string>& permissions );
