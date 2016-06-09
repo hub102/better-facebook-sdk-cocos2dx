@@ -41,7 +41,7 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPI(JNIEnv* env, jo
     h102::FacebookListener* listener = h102::FacebookX::getListener();
     if (listener) {
         const char* cJsonData = env->GetStringUTFChars(jsonData, NULL);
-        const char* cTag = env->GetStringUTFChars(jsonData, NULL);
+        const char* cTag = env->GetStringUTFChars(tag, NULL);
         string cppJsonData = string(cJsonData);
         string cppTag = string(cTag);
         listener->onAPI(cppTag, cppJsonData);
@@ -258,15 +258,32 @@ namespace h102 {
     }
 
     void FacebookX::api(const std::string& path, const std::string& tag) {
-
+        FacebookX::api(path, string("GET"), FBAPIParam(), tag);
     }
 
     void FacebookX::api(const std::string& path, const FBAPIParam& params, const std::string& tag) {
-
+        FacebookX::api(path, string("GET"), params, tag);
     }
 
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag) {
-
+        string stringifiedParams;
+        for (auto i = params.begin(); i != params.end(); ++i) {
+            stringifiedParams += (i->first + string("Hub102MarkRulesTheWorld") + i->second + string(";"));
+        }
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "api", 
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
+            jstring stringPath = t.env->NewStringUTF(path.c_str());
+            jstring stringMethod = t.env->NewStringUTF(method.c_str());
+            jstring stringParams = t.env->NewStringUTF(stringifiedParams.c_str());
+            jstring stringTag = t.env->NewStringUTF(tag.c_str());
+            t.env->CallStaticVoidMethod(t.classID, t.methodID, stringPath, stringMethod, stringParams, stringTag);
+            t.env->DeleteLocalRef(t.classID);
+            t.env->DeleteLocalRef(stringPath);
+            t.env->DeleteLocalRef(stringMethod);
+            t.env->DeleteLocalRef(stringParams);
+            t.env->DeleteLocalRef(stringTag);
+        }
     }
 
     void FacebookX::requestInvitableFriends(const FBAPIParam &params) {

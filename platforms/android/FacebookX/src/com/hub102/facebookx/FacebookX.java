@@ -163,7 +163,6 @@ public class FacebookX {
                             new FacebookCallback<GameRequestDialog.Result>() {
                                 @Override
                                 public void onSuccess(GameRequestDialog.Result result) {
-                                    Log.v("game request success", result.toString());
                                     onInviteFriendsWithInviteIdsResult(true, result.toString());
                                 }
                                 @Override
@@ -201,10 +200,10 @@ public class FacebookX {
         });
     }
 
-    private static void onAPIWrapper(final String apiPath, final String data) {
+    private static void onAPIWrapper(final String tag, final String data) {
         FacebookX.runOnGLThread(new Runnable() {
             public void run() {
-                FacebookX.onAPI(apiPath, data);
+                FacebookX.onAPI(tag, data);
             }
         });
     }
@@ -366,7 +365,6 @@ public class FacebookX {
     }
 
     public static void share(final Map<String, String> info) {
-        Log.v("Java share:", info.toString());
         try {
             final String shareType = FacebookX.getOrDefault(info, "type", FB_NONE);
             final int type = 2;
@@ -448,14 +446,10 @@ public class FacebookX {
     }
 
     public static void shareOpenGraphStory(final String properties, final String actionType, final String previewPropertyName) {
-        Log.v("Java shareOG Wrapper", properties);
         shareOpenGraphStory(FacebookX.convertStringToPairs(properties, ";", "Hub102MarkRulesTheWorld"), actionType, previewPropertyName);
     }
 
     public static void shareOpenGraphStory(final Map<String, String> properties, final String actionType, final String previewPropertyName) {
-        Log.v("Java shareOG", properties.toString());
-        Log.v("Java shareOG", actionType);
-        Log.v("Java shareOG", previewPropertyName);
         String type = null;
         String title = null;
         String description = null;
@@ -507,9 +501,39 @@ public class FacebookX {
             public void onCompleted(GraphResponse graphResponse) {
                 if (graphResponse.getJSONObject() != null) {
                     FacebookX.onRequestInvitableFriendsWrapper(graphResponse.getJSONObject().toString());
-                } else {
-                    FacebookX.onRequestInvitableFriendsWrapper(null);
                 }
+//                else {
+//                    FacebookX.onRequestInvitableFriendsWrapper(null);
+//                }
+            }
+        });
+        request.executeAsync();
+    }
+
+    public static void api(final String path, final String method, final String params, final String tag) {
+        api(path, method, convertStringToPairs(params, ";", "Hub102MarkRulesTheWorld"), tag);
+    }
+
+    public static void api(final String path, final String method, final Map<String, String> params, final String tag) {
+        Bundle args = new Bundle();
+        for (Map.Entry<String, String>entry:params.entrySet()) {
+            args.putString(entry.getKey(), entry.getValue());
+        }
+        HttpMethod httpMethod = HttpMethod.GET;
+        if (method.equals("POST")) {
+            httpMethod = HttpMethod.POST;
+        } else if (method.equals("DELETE")) {
+            httpMethod = HttpMethod.DELETE;
+        }
+        GraphRequest request = new GraphRequest(AccessToken.getCurrentAccessToken(), path, args, httpMethod, new GraphRequest.Callback() {
+            @Override
+            public void onCompleted(GraphResponse graphResponse) {
+                if (graphResponse.getJSONObject() != null) {
+                    FacebookX.onAPIWrapper(tag, graphResponse.getJSONObject().toString());
+                }
+//                else {
+//                    FacebookX.onRequestInvitableFriendsWrapper(null);
+//                }
             }
         });
         request.executeAsync();
@@ -523,7 +547,6 @@ public class FacebookX {
         if (invite_ids == null || invite_ids.length == 0) {
             return;
         }
-        Log.v("Java reqFriends", invite_ids.toString());
 //        StringBuilder sb = new StringBuilder();
 //        for (int i = 0; i < invite_ids.length; ++i) {
 //            sb.append(invite_ids[i]);
@@ -543,13 +566,15 @@ public class FacebookX {
 
     private static Map<String, String> convertStringToPairs(String string, String pairSplRegexp, String keyValSplRegexp) {
         Map<String, String> ret = new HashMap<String, String>();
-        String[] pairs = string.split(pairSplRegexp);
-        for (String pair: pairs) {
-            String[] keyAndValue = pair.split(keyValSplRegexp);
-            if (keyAndValue.length == 2) {
-                ret.put(keyAndValue[0], keyAndValue[1]);
-            } else {
-                ret.put(keyAndValue[0], "");
+        if (string != null && !string.equals("")) {
+            String[] pairs = string.split(pairSplRegexp);
+            for (String pair : pairs) {
+                String[] keyAndValue = pair.split(keyValSplRegexp);
+                if (keyAndValue.length == 2) {
+                    ret.put(keyAndValue[0], keyAndValue[1]);
+                } else {
+                    ret.put(keyAndValue[0], "");
+                }
             }
         }
         return ret;
