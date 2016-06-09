@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.os.Handler;
 
@@ -44,6 +45,7 @@ import com.facebook.share.widget.ShareDialog;
 
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -350,18 +352,17 @@ public class FacebookX {
         return null;
     }
 
-    public static void share(final String info) {
-//        Map<String, String> mappedInfo = new HashMap<String, String>();
-//        String[] pairs = info.split(";");
-//        for (String pair: pairs) {
-//            String[] keyAndValue = pair.split("Hub102MarkRulesTheWorld");
-//            if (keyAndValue.length == 2) {
-//                mappedInfo.put(keyAndValue[0], keyAndValue[1]);
-//            } else {
-//                mappedInfo.put(keyAndValue[0], "");
-//            }
-//        }
-        FacebookX.share(FacebookX.convertStringToPairs(info, ";", "Hub102MarkRulesTheWorld"));
+    public static void share(final String info) throws UnsupportedEncodingException {
+        Log.v("share", info.toString());
+        Map<String, String> mappedInfo = FacebookX.convertStringToPairs(info, ";", ":");
+        Log.v("share", mappedInfo.toString());
+        for (Map.Entry<String, String> pair : mappedInfo.entrySet()) {
+            if (pair.getValue() != null && !pair.getValue().trim().equals("") && !pair.getKey().trim().equals("type")) {
+                pair.setValue(base64DecodeUTF8(pair.getValue()));
+            }
+        }
+
+        FacebookX.share(mappedInfo);
     }
 
     public static void share(final Map<String, String> info) {
@@ -445,21 +446,31 @@ public class FacebookX {
         }
     }
 
-    public static void shareOpenGraphStory(final String properties, final String actionType, final String previewPropertyName) {
-        shareOpenGraphStory(FacebookX.convertStringToPairs(properties, ";", "Hub102MarkRulesTheWorld"), actionType, previewPropertyName);
+    private static String base64DecodeUTF8(final String input) throws UnsupportedEncodingException {
+        if (input == null || input.trim().equals("0")) {
+            return null;
+        }
+        return new String(Base64.decode(input, Base64.DEFAULT), "UTF-8");
+    }
+
+    public static void shareOpenGraphStory(final String properties, final String actionType, final String previewPropertyName) throws UnsupportedEncodingException {
+        Map<String, String> mappedProperties = FacebookX.convertStringToPairs(properties, ";", ":");
+
+        for (Map.Entry<String, String> pair : mappedProperties.entrySet()) {
+            if (pair.getValue() != null && !pair.getValue().trim().equals("")) {
+                pair.setValue(base64DecodeUTF8(pair.getValue()));
+            }
+        }
+
+        shareOpenGraphStory(mappedProperties, base64DecodeUTF8(actionType), base64DecodeUTF8(previewPropertyName));
     }
 
     public static void shareOpenGraphStory(final Map<String, String> properties, final String actionType, final String previewPropertyName) {
-        String type = null;
-        String title = null;
-        String description = null;
-        String image = null;
-        String url = null;
-        type = (String)FacebookX.getOrDefault(properties, "type", "");
-        title = (String)FacebookX.getOrDefault(properties, "title", "");
-        description = (String)FacebookX.getOrDefault(properties, "description", "");
-        image = (String)FacebookX.getOrDefault(properties, "image", "");
-        url = (String)FacebookX.getOrDefault(properties, "url", "");
+        String type = (String)FacebookX.getOrDefault(properties, "type", "");
+        String title = (String)FacebookX.getOrDefault(properties, "title", "");
+        String description = (String)FacebookX.getOrDefault(properties, "description", "");
+        String image = (String)FacebookX.getOrDefault(properties, "image", "");
+        String url = (String)FacebookX.getOrDefault(properties, "url", "");
 
         if (isConnectionAvailable() == false) {
             FacebookX.onSharedFailedWrapper("Connection not available");
@@ -488,7 +499,7 @@ public class FacebookX {
     }
 
     public static void requestInvitableFriends(final String params) {
-        requestInvitableFriends(FacebookX.convertStringToPairs(params, ";", "Hub102MarkRulesTheWorld"));
+        requestInvitableFriends(FacebookX.convertStringToPairs(params, ";", ":"));
     }
 
     public static void requestInvitableFriends(final Map<String, String> params) {
@@ -511,7 +522,7 @@ public class FacebookX {
     }
 
     public static void api(final String path, final String method, final String params, final String tag) {
-        api(path, method, convertStringToPairs(params, ";", "Hub102MarkRulesTheWorld"), tag);
+        api(path, method, convertStringToPairs(params, ";", ":"), tag);
     }
 
     public static void api(final String path, final String method, final Map<String, String> params, final String tag) {
@@ -547,14 +558,7 @@ public class FacebookX {
         if (invite_ids == null || invite_ids.length == 0) {
             return;
         }
-//        StringBuilder sb = new StringBuilder();
-//        for (int i = 0; i < invite_ids.length; ++i) {
-//            sb.append(invite_ids[i]);
-//            if (i >= invite_ids.length - 1) continue;
-//            sb.append(",");
-//        }
-//        GameRequestContent content = new GameRequestContent.Builder().setMessage(text).setTitle(title).setTo(sb.toString()).build();
-//        FacebookX.requestDialog.show(content);
+
         List<String> recipients = Arrays.asList(invite_ids);
         GameRequestContent content = new GameRequestContent.Builder()
                 .setTitle(title)

@@ -162,6 +162,10 @@ namespace h102 {
                                      withContent:content
                                         delegate:delegate];
     }
+
+    void FacebookX::shareEncodedContent(const FBShareInfo& info) {
+        
+    }
     
     bool FacebookX::canPresentWithFBApp(const h102::FBShareInfo &info) {
         id<FBSDKSharingContent> content = [FacebookXImpl getContent:info];

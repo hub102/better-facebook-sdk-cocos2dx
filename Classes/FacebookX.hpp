@@ -223,6 +223,7 @@ namespace h102 {
         static std::vector<std::string> getPermissionList();
         
         static void share(const FBShareInfo& info);
+        static void shareEncodedContent(const FBShareInfo& info);
         
         static void api(const std::string& path, const std::string& tag);
         static void api(const std::string& path, const FBAPIParam& params, const std::string& tag);

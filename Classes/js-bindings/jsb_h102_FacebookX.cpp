@@ -481,6 +481,24 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
     return false;
 }
 
+bool js_h102_facebookX_shareEncodedContent(JSContext *cx, uint32_t argc, jsval *vp) {
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    do {
+        if (argc == 1) {
+            std::map<std::string, std::string> arg0;
+            ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+            JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_shareEncodedContent : Error processing arguments");
+            FacebookX::shareEncodedContent(map_to_FBShareInfo(arg0));
+            args.rval().setUndefined();
+            return true;
+        }
+    } while (0);
+
+    JS_ReportError(cx, "js_h102_facebookX_shareEncodedContent : wrong number of arguments");
+    return false;
+}
+
 bool js_h102_facebookX_api(JSContext* cx, uint32_t argc, jsval *vp) {
 	JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
@@ -669,6 +687,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, 
 			JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("share", js_h102_facebookX_share, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("shareEncodedContent", js_h102_facebookX_shareEncodedContent, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("api", js_h102_facebookX_api, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("shareEncodedOpenGraphStory", js_h102_facebookX_shareEncodedOpenGraphStory, 
 			0, JSPROP_PERMANENT | JSPROP_ENUMERATE),

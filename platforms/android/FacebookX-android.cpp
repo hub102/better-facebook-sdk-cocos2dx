@@ -193,12 +193,16 @@ namespace h102 {
     }
 
     void FacebookX::share(const FBShareInfo& info) {
+        //TODO: implement logic for the C++ api. Remember to invoke the base64 encoding!!!
+    }
+
+    void FacebookX::shareEncodedContent(const FBShareInfo& info) {
         string stringifiedInfo;
-        stringifiedInfo += (string("typeHub102MarkRulesTheWorld") + to_string(info.type) + string(";"));
-        stringifiedInfo += (string("linkHub102MarkRulesTheWorld") + string(info.link) + string(";"));
-        stringifiedInfo += (string("titleHub102MarkRulesTheWorld") + string(info.title) + string(";"));
-        stringifiedInfo += (string("textHub102MarkRulesTheWorld") + string(info.text) + string(";"));
-        stringifiedInfo += (string("mediaHub102MarkRulesTheWorld") + string(info.media) + string(";"));
+        stringifiedInfo += (string("type:") + to_string(info.type) + string(";"));
+        stringifiedInfo += (string("link:") + string(info.link) + string(";"));
+        stringifiedInfo += (string("title:") + string(info.title) + string(";"));
+        stringifiedInfo += (string("text:") + string(info.text) + string(";"));
+        stringifiedInfo += (string("media:") + string(info.media) + string(";"));
         const char* c_info = stringifiedInfo.c_str();
         JniMethodInfo t;
         if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "share", "(Ljava/lang/String;)V")) {
@@ -209,37 +213,17 @@ namespace h102 {
         }
     }
 
-    // void FacebookX::shareEncodeContent(const FBShareInfo& info) {
-
-    // }
-
     void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
-        // string stringifiedProps;
-        // stringifiedProps += (string("typeHub102MarkRulesTheWorld") + string(properties.type) + string(";"));
-        // stringifiedProps += (string("titleHub102MarkRulesTheWorld") + string(properties.title) + string(";"));
-        // stringifiedProps += (string("descriptionHub102MarkRulesTheWorld") + string(properties.description) + string(";"));
-        // stringifiedProps += (string("imageHub102MarkRulesTheWorld") + string(properties.image) + string(";"));
-        // stringifiedProps += (string("urlHub102MarkRulesTheWorld") + string(properties.url) + string(";"));
-        // JniMethodInfo t;
-        // if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "shareOpenGraphStory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
-        //     jstring stringProps = t.env->NewStringUTF(stringifiedProps.c_str());
-        //     jstring stringActionType = t.env->NewStringUTF(actionType.c_str());
-        //     jstring stringPreviewPropertyName = t.env->NewStringUTF(previewPropertyName.c_str());
-        //     t.env->CallStaticVoidMethod(t.classID, t.methodID, stringProps, stringActionType, stringPreviewPropertyName);
-        //     t.env->DeleteLocalRef(t.classID);
-        //     t.env->DeleteLocalRef(stringProps);
-        //     t.env->DeleteLocalRef(stringActionType);
-        //     t.env->DeleteLocalRef(stringPreviewPropertyName);
-        // }       
+        //TODO: implement logic for the C++ api. Remember to invoke the base64 encoding!!!
     }
 
     void FacebookX::shareEncodedOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
         string stringifiedProps;
-        stringifiedProps += (string("typeHub102MarkRulesTheWorld") + string(properties.type) + string(";"));
-        stringifiedProps += (string("titleHub102MarkRulesTheWorld") + string(properties.title) + string(";"));
-        stringifiedProps += (string("descriptionHub102MarkRulesTheWorld") + string(properties.description) + string(";"));
-        stringifiedProps += (string("imageHub102MarkRulesTheWorld") + string(properties.image) + string(";"));
-        stringifiedProps += (string("urlHub102MarkRulesTheWorld") + string(properties.url) + string(";"));
+        stringifiedProps += (string("type:") + string(properties.type) + string(";"));
+        stringifiedProps += (string("title:") + string(properties.title) + string(";"));
+        stringifiedProps += (string("description:") + string(properties.description) + string(";"));
+        stringifiedProps += (string("image:") + string(properties.image) + string(";"));
+        stringifiedProps += (string("url:") + string(properties.url) + string(";"));
         JniMethodInfo t;
         if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "shareOpenGraphStory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
             jstring stringProps = t.env->NewStringUTF(stringifiedProps.c_str());
@@ -268,7 +252,7 @@ namespace h102 {
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag) {
         string stringifiedParams;
         for (auto i = params.begin(); i != params.end(); ++i) {
-            stringifiedParams += (i->first + string("Hub102MarkRulesTheWorld") + i->second + string(";"));
+            stringifiedParams += (i->first + string(":") + i->second + string(";"));
         }
         JniMethodInfo t;
         if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "api", 
@@ -289,7 +273,7 @@ namespace h102 {
     void FacebookX::requestInvitableFriends(const FBAPIParam &params) {
         string stringifiedParams;
         for (auto i = params.begin(); i != params.end(); ++i) {
-            stringifiedParams += (i->first + string("Hub102MarkRulesTheWorld") + i->second + string(";"));
+            stringifiedParams += (i->first + string(":") + i->second + string(";"));
         }
         JniMethodInfo t;
         if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "requestInvitableFriends", "(Ljava/lang/String;)V")) {
