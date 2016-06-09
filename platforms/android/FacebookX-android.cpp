@@ -118,7 +118,7 @@ namespace h102 {
             return;
         }
         string params;
-        for (auto i = permissions.begin(); i != permissions.end(); i++) {
+        for (auto i = permissions.begin(); i != permissions.end(); ++i) {
             params += *i;
             params += string(";");
         }
@@ -270,11 +270,35 @@ namespace h102 {
     }
 
     void FacebookX::requestInvitableFriends(const FBAPIParam &params) {
-
+        string stringifiedParams;
+        for (auto i = params.begin(); i != params.end(); ++i) {
+            stringifiedParams += (i->first + string("Hub102MarkRulesTheWorld") + i->second + string(";"));
+        }
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "requestInvitableFriends", "(Ljava/lang/String;)V")) {
+            jstring stringParams = t.env->NewStringUTF(stringifiedParams.c_str());
+            t.env->CallStaticVoidMethod(t.classID, t.methodID, stringParams);
+            t.env->DeleteLocalRef(t.classID);
+            t.env->DeleteLocalRef(stringParams);
+        }           
     }
 
     void FacebookX::inviteFriendsWithInviteIds(const std::vector<std::string> &invite_ids, const std::string &title, const std::string &invite_text) {
-
+        string stringifiedIds;
+        for (auto i = invite_ids.begin(); i != invite_ids.end(); ++i) {
+            stringifiedIds += (*i + string(";"));
+        }    
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "inviteFriendsWithInviteIds", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
+            jstring stringIds = t.env->NewStringUTF(stringifiedIds.c_str());
+            jstring stringTitle = t.env->NewStringUTF(title.c_str());
+            jstring stringText = t.env->NewStringUTF(invite_text.c_str());
+            t.env->CallStaticVoidMethod(t.classID, t.methodID, stringIds, stringTitle, stringText);
+            t.env->DeleteLocalRef(t.classID);
+            t.env->DeleteLocalRef(stringIds);
+            t.env->DeleteLocalRef(stringTitle);
+            t.env->DeleteLocalRef(stringText);
+        }       
     }
 }
 
