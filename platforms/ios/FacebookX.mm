@@ -197,7 +197,7 @@ namespace h102 {
                 [_params setObject:value forKey:key];
             }
             
-            if (![_method  isEqualToString:@""] && _params.count > 0) {
+            if (![_method isEqualToString:@""]) {
                 [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params HTTPMethod:_method]
                  startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                      if (!error) {
@@ -212,7 +212,7 @@ namespace h102 {
                      } else
                          NSLog(@"%@", error);
                  }];
-            } else if (![_method isEqualToString:@""]) {
+            } else { //if (![_method isEqualToString:@""]) {
                 [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params]
                  startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
                      if (!error) {
@@ -227,22 +227,22 @@ namespace h102 {
                      } else
                          NSLog(@"%@", error);
                  }];
-            } else {
-                [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]
-                 startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-                     if (!error) {
-                         NSLog(@"API executed OK!!, tag = %@", _tag);
-                         if (FacebookX::listener) {
-                             NSString* stringifiedResult = toJSONString(result);
-                             std::string cStringResult = [stringifiedResult UTF8String];
-                             if (FacebookX::listener) {
-                                 listener->onAPI([_tag UTF8String], cStringResult);
-                             }
-                         }
-                     } else
-                         NSLog(@"%@", error);
-                 }];
-            }
+            } //else {
+//                [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]
+//                 startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+//                     if (!error) {
+//                         NSLog(@"API executed OK!!, tag = %@", _tag);
+//                         if (FacebookX::listener) {
+//                             NSString* stringifiedResult = toJSONString(result);
+//                             std::string cStringResult = [stringifiedResult UTF8String];
+//                             if (FacebookX::listener) {
+//                                 listener->onAPI([_tag UTF8String], cStringResult);
+//                             }
+//                         }
+//                     } else
+//                         NSLog(@"%@", error);
+//                 }];
+//            }
         }
     }
     
