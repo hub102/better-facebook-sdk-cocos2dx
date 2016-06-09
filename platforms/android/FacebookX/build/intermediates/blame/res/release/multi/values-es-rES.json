@@ -1,0 +1,349 @@
+[
+    {
+        "outputFile": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/res/merged/release/values-es-rES/values-es-rES.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endColumn": 129,
+                    "endOffset": 180
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 2,
+                        "startColumn": 4,
+                        "startOffset": 55,
+                        "endColumn": 129,
+                        "endOffset": 180
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 3,
+                    "startColumn": 4,
+                    "startOffset": 185,
+                    "endColumn": 111,
+                    "endOffset": 292
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 185,
+                        "endColumn": 111,
+                        "endOffset": 292
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 4,
+                    "startColumn": 4,
+                    "startOffset": 297,
+                    "endColumn": 136,
+                    "endOffset": 429
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 4,
+                        "startColumn": 4,
+                        "startOffset": 297,
+                        "endColumn": 136,
+                        "endOffset": 429
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 5,
+                    "startColumn": 4,
+                    "startOffset": 434,
+                    "endColumn": 97,
+                    "endOffset": 527
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 5,
+                        "startColumn": 4,
+                        "startOffset": 434,
+                        "endColumn": 97,
+                        "endOffset": 527
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 6,
+                    "startColumn": 4,
+                    "startOffset": 532,
+                    "endColumn": 67,
+                    "endOffset": 595
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 6,
+                        "startColumn": 4,
+                        "startOffset": 532,
+                        "endColumn": 67,
+                        "endOffset": 595
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 7,
+                    "startColumn": 4,
+                    "startOffset": 600,
+                    "endColumn": 71,
+                    "endOffset": 667
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 7,
+                        "startColumn": 4,
+                        "startOffset": 600,
+                        "endColumn": 71,
+                        "endOffset": 667
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 8,
+                    "startColumn": 4,
+                    "startOffset": 672,
+                    "endColumn": 60,
+                    "endOffset": 728
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 8,
+                        "startColumn": 4,
+                        "startOffset": 672,
+                        "endColumn": 60,
+                        "endOffset": 728
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 9,
+                    "startColumn": 4,
+                    "startOffset": 733,
+                    "endColumn": 73,
+                    "endOffset": 802
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 9,
+                        "startColumn": 4,
+                        "startOffset": 733,
+                        "endColumn": 73,
+                        "endOffset": 802
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 10,
+                    "startColumn": 4,
+                    "startOffset": 807,
+                    "endColumn": 81,
+                    "endOffset": 884
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 10,
+                        "startColumn": 4,
+                        "startOffset": 807,
+                        "endColumn": 81,
+                        "endOffset": 884
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 11,
+                    "startColumn": 4,
+                    "startOffset": 889,
+                    "endColumn": 97,
+                    "endOffset": 982
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 11,
+                        "startColumn": 4,
+                        "startOffset": 889,
+                        "endColumn": 97,
+                        "endOffset": 982
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 12,
+                    "startColumn": 4,
+                    "startOffset": 987,
+                    "endColumn": 71,
+                    "endOffset": 1054
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 12,
+                        "startColumn": 4,
+                        "startOffset": 987,
+                        "endColumn": 71,
+                        "endOffset": 1054
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 13,
+                    "startColumn": 4,
+                    "startOffset": 1059,
+                    "endColumn": 71,
+                    "endOffset": 1126
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 13,
+                        "startColumn": 4,
+                        "startOffset": 1059,
+                        "endColumn": 71,
+                        "endOffset": 1126
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 14,
+                    "startColumn": 4,
+                    "startOffset": 1131,
+                    "endColumn": 90,
+                    "endOffset": 1217
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 14,
+                        "startColumn": 4,
+                        "startOffset": 1131,
+                        "endColumn": 90,
+                        "endOffset": 1217
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 15,
+                    "startColumn": 4,
+                    "startOffset": 1222,
+                    "endColumn": 104,
+                    "endOffset": 1322
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 15,
+                        "startColumn": 4,
+                        "startOffset": 1222,
+                        "endColumn": 104,
+                        "endOffset": 1322
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 16,
+                    "startColumn": 4,
+                    "startOffset": 1327,
+                    "endColumn": 64,
+                    "endOffset": 1387
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 16,
+                        "startColumn": 4,
+                        "startOffset": 1327,
+                        "endColumn": 64,
+                        "endOffset": 1387
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 17,
+                    "startColumn": 4,
+                    "startOffset": 1392,
+                    "endColumn": 68,
+                    "endOffset": 1456
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 17,
+                        "startColumn": 4,
+                        "startOffset": 1392,
+                        "endColumn": 68,
+                        "endOffset": 1456
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 18,
+                    "startColumn": 4,
+                    "startOffset": 1461,
+                    "endColumn": 155,
+                    "endOffset": 1612
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 18,
+                        "startColumn": 4,
+                        "startOffset": 1461,
+                        "endColumn": 155,
+                        "endOffset": 1612
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 19,
+                    "startColumn": 4,
+                    "startOffset": 1617,
+                    "endColumn": 61,
+                    "endOffset": 1674
+                },
+                "from": {
+                    "file": "/Users/elcapitan/Documents/better-facebook-sdk-cocos2dx-test/frameworks/FacebookX/platforms/android/FacebookX/build/intermediates/exploded-aar/com.facebook.android/facebook-android-sdk/4.12.1/res/values-es-rES/values-es-rES.xml",
+                    "position": {
+                        "startLine": 19,
+                        "startColumn": 4,
+                        "startOffset": 1617,
+                        "endColumn": 61,
+                        "endOffset": 1674
+                    }
+                }
+            }
+        ]
+    }
+]
