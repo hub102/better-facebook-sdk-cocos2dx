@@ -45,7 +45,7 @@ h102.facebookX._getLoginStatus = h102.facebookX._getLoginStatus || function() {
 	});
 };
 
-h102.facebookX._apiQueued = h102.facebookX._apiQueued|| function() {
+h102.facebookX._apiQueued = h102.facebookX._apiQueued || function() {
 	for (var i = 0; i < h102.facebookX._cachedAPICalled.length; i++) {
 		var api = h102.facebookX._cachedAPICalled[i];
 		var path = api['_path'];
@@ -302,6 +302,83 @@ h102.facebookX.api = h102.facebookX.api || function(path, method, params, tag) {
 	}
 };
 
+h102.facebookX.shareOpenGraphStory = function(info, actionType, previewPropertyName) {
+	if (cc.sys.isNative) {
+		// info["url"] = Base64.encode(info["url"]);
+		// info["type"] = Base64.encode(info["type"]);
+		// info["title"] = Base64.encode(info["title"]);
+		// info["image"] = Base64.encode(info["image"]);
+		// info["description"] = Base64.encode(info["description"]);
+		// actionType = Base64.encode(actionType);
+		// previewPropertyName = Base64.encode(previewPropertyName);
+		h102.facebookX.shareEncodedOpenGraphStory(info, actionType, previewPropertyName);
+	} else {
+        var ogType = info['type'];
+        var propertyName = ogType.substring(ogType.indexOf(':') + 1);
+        var callbackOK = h102.facebookX.onSharedSuccess;
+        var callbackFailed = h102.facebookX.onSharedFailed;
+        h102.facebookX.setListener({
+            onAPI: function(tag, msg) {
+                // if (tag == 'me/joselitopuzzle_test:beat') {
+            	if (tag == 'me/' + actionType) {
+                    if (msg) {
+                        var tmpId = msg['id'];
+                        h102.facebookX.setListener({
+                            onAPI: function(tag, msg) {
+                                if (tag == '/' + tmpId) {
+                                    if (msg) {
+                                        var lastId = msg['data']['level']['id'];
+                                        var obj1 = {};
+                                        obj1[propertyName] = lastId;
+                                        cc.log("test obj1 = " + JSON.stringify(obj1));
+                                        var infoToShare = {
+                                            "dialog": "shareOpenGraph",
+                                            "object_type": info['type'], 
+                                            "title": 'title',
+                                            "url": info['url'],
+                                            "description": 'description',
+                                            "action_type": actionType,
+                                        };
+                                        infoToShare[previewPropertyName] = lastId;
+                                        h102.facebookX.dialog(infoToShare);
+                                        
+                                    } else {
+                                        cc.log("FAILED to get lastID");
+                                        callback && callback(false, true);
+                                    }
+                                }
+                            }
+                        });
+
+                        h102.facebookX.api('/' + tmpId, 'GET', {}, '/' + tmpId);
+
+                    } else {
+                        cc.log("FAILED to get tmpId");
+                        cc.log("MSG = " + JSON.stringify(msg));
+                        callback && callback(false, true);
+                    }
+                } 
+            }
+        });
+
+        var obj = {};
+        obj[propertyName] = {
+            'og:title': info['title'],
+            'og:image': info['image'],
+            'og:url': info['url'],
+            'og:type': info['type'],
+            'og:description': info['description']
+        };
+
+        h102.facebookX.api(
+            'me/' + actionType,
+            'POST', 
+            obj,
+            'me/' + actionType
+        );
+	}
+};
+
 // getSDKVersion: function() {
 
 // },
@@ -369,81 +446,3 @@ h102.facebookX.api = h102.facebookX.api || function(path, method, params, tag) {
 // onGetUserInfo: function(userInfo) {
 
 // }
-
-h102.facebookX.shareOpenGraphStory = function(info, actionType, previewPropertyName) {
-	if (cc.sys.isNative) {
-		info["url"] = Base64.encode(info["url"]);
-		info["type"] = Base64.encode(info["type"]);
-		info["title"] = Base64.encode(info["title"]);
-		info["image"] = Base64.encode(info["image"]);
-		info["description"] = Base64.encode(info["description"]);
-		actionType = Base64.encode(actionType);
-		previewPropertyName = Base64.encode(previewPropertyName);
-		h102.facebookX.shareEncodedOpenGraphStory(info, actionType, previewPropertyName)
-	} else {
-        var ogType = info['type'];
-        var propertyName = ogType.substring(ogType.indexOf(':') + 1);
-        var callbackOK = h102.facebookX.onSharedSuccess;
-        var callbackFailed = h102.facebookX.onSharedFailed;
-        h102.facebookX.setListener({
-            onAPI: function(tag, msg) {
-                // if (tag == 'me/joselitopuzzle_test:beat') {
-            	if (tag == 'me/' + actionType) {
-                    if (msg) {
-                        var tmpId = msg['id'];
-                        h102.facebookX.setListener({
-                            onAPI: function(tag, msg) {
-                                if (tag == '/' + tmpId) {
-                                    if (msg) {
-                                        var lastId = msg['data']['level']['id'];
-                                        var obj1 = {};
-                                        obj1[propertyName] = lastId;
-                                        cc.log("test obj1 = " + JSON.stringify(obj1));
-                                        var infoToShare = {
-                                            "dialog": "shareOpenGraph",
-                                            "object_type": info['type'], 
-                                            "title": 'title',
-                                            "url": info['url'],
-                                            "description": 'description',
-                                            "action_type": actionType,
-                                        };
-                                        infoToShare[previewPropertyName] = lastId;
-                                        h102.facebookX.dialog(infoToShare);
-                                        
-                                    } else {
-                                        cc.log("FAILED to get lastID");
-                                        callback && callback(false, true);
-                                    }
-                                }
-                            }
-                        });
-
-                        h102.facebookX.api('/' + tmpId, 'GET', {}, '/' + tmpId);
-
-                    } else {
-                        cc.log("FAILED to get tmpId");
-                        cc.log("MSG = " + JSON.stringify(msg));
-                        callback && callback(false, true);
-                    }
-                } 
-            }
-        });
-
-        var obj = {};
-        obj[propertyName] = {
-            'og:title': info['title'],
-            'og:image': info['image'],
-            'og:url': info['url'],
-            'og:type': info['type'],
-            'og:description': info['description']
-        };
-
-        h102.facebookX.api(
-            'me/' + actionType,
-            'POST', 
-            obj,
-            'me/' + actionType
-        );
-	}
-}
-

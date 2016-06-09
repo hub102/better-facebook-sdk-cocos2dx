@@ -557,7 +557,7 @@ bool js_h102_facebookX_shareEncodedOpenGraphStory(JSContext *cx, uint32_t argc, 
     	}
 	} while(0);
 
-    JS_ReportError(cx, "js_h102_facebookX_shareOpenGraphStory : wrong number of arguments");
+    JS_ReportError(cx, "js_h102_facebookX_shareEncodedOpenGraphStory : wrong number of arguments");
     return false;
 }
 

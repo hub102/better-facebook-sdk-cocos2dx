@@ -147,15 +147,37 @@ namespace h102 {
     }
 
     std::string FacebookX::getUserID() {
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", 
+                "getUserID", "()Ljava/lang/String;")) {
+            jstring id = (jstring)t.env->CallStaticObjectMethod(t.classID, t.methodID);
 
+            t.env->DeleteLocalRef(t.classID);
+            
+            return JniHelper::jstring2string(id);
+        }
     }
 
     std::string FacebookX::getName() {
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", 
+                "getName", "()Ljava/lang/String;")) {
+            jstring name = (jstring)t.env->CallStaticObjectMethod(t.classID, t.methodID);
 
+            t.env->DeleteLocalRef(t.classID);
+            
+            return JniHelper::jstring2string(name);
+        }
     }
 
     bool FacebookX::isLoggedIn() {
-
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX",
+            "isLoggedIn", "()Z")) {
+            jboolean login = t.env->CallStaticBooleanMethod(t.classID, t.methodID);
+            t.env->DeleteLocalRef(t.classID);
+            return login;
+        }
     }
 
     void FacebookX::logout() {
@@ -171,7 +193,64 @@ namespace h102 {
     }
 
     void FacebookX::share(const FBShareInfo& info) {
+        string stringifiedInfo;
+        stringifiedInfo += (string("typeHub102MarkRulesTheWorld") + to_string(info.type) + string(";"));
+        stringifiedInfo += (string("linkHub102MarkRulesTheWorld") + string(info.link) + string(";"));
+        stringifiedInfo += (string("titleHub102MarkRulesTheWorld") + string(info.title) + string(";"));
+        stringifiedInfo += (string("textHub102MarkRulesTheWorld") + string(info.text) + string(";"));
+        stringifiedInfo += (string("mediaHub102MarkRulesTheWorld") + string(info.media) + string(";"));
+        const char* c_info = stringifiedInfo.c_str();
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "share", "(Ljava/lang/String;)V")) {
+            jstring stringArg = t.env->NewStringUTF(c_info);
+            t.env->CallStaticVoidMethod(t.classID, t.methodID, stringArg);
+            t.env->DeleteLocalRef(t.classID);
+            t.env->DeleteLocalRef(stringArg);
+        }
+    }
 
+    // void FacebookX::shareEncodeContent(const FBShareInfo& info) {
+
+    // }
+
+    void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
+        // string stringifiedProps;
+        // stringifiedProps += (string("typeHub102MarkRulesTheWorld") + string(properties.type) + string(";"));
+        // stringifiedProps += (string("titleHub102MarkRulesTheWorld") + string(properties.title) + string(";"));
+        // stringifiedProps += (string("descriptionHub102MarkRulesTheWorld") + string(properties.description) + string(";"));
+        // stringifiedProps += (string("imageHub102MarkRulesTheWorld") + string(properties.image) + string(";"));
+        // stringifiedProps += (string("urlHub102MarkRulesTheWorld") + string(properties.url) + string(";"));
+        // JniMethodInfo t;
+        // if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "shareOpenGraphStory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
+        //     jstring stringProps = t.env->NewStringUTF(stringifiedProps.c_str());
+        //     jstring stringActionType = t.env->NewStringUTF(actionType.c_str());
+        //     jstring stringPreviewPropertyName = t.env->NewStringUTF(previewPropertyName.c_str());
+        //     t.env->CallStaticVoidMethod(t.classID, t.methodID, stringProps, stringActionType, stringPreviewPropertyName);
+        //     t.env->DeleteLocalRef(t.classID);
+        //     t.env->DeleteLocalRef(stringProps);
+        //     t.env->DeleteLocalRef(stringActionType);
+        //     t.env->DeleteLocalRef(stringPreviewPropertyName);
+        // }       
+    }
+
+    void FacebookX::shareEncodedOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
+        string stringifiedProps;
+        stringifiedProps += (string("typeHub102MarkRulesTheWorld") + string(properties.type) + string(";"));
+        stringifiedProps += (string("titleHub102MarkRulesTheWorld") + string(properties.title) + string(";"));
+        stringifiedProps += (string("descriptionHub102MarkRulesTheWorld") + string(properties.description) + string(";"));
+        stringifiedProps += (string("imageHub102MarkRulesTheWorld") + string(properties.image) + string(";"));
+        stringifiedProps += (string("urlHub102MarkRulesTheWorld") + string(properties.url) + string(";"));
+        JniMethodInfo t;
+        if (JniHelper::getStaticMethodInfo(t, "com/hub102/facebookx/FacebookX", "shareOpenGraphStory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V")) {
+            jstring stringProps = t.env->NewStringUTF(stringifiedProps.c_str());
+            jstring stringActionType = t.env->NewStringUTF(actionType.c_str());
+            jstring stringPreviewPropertyName = t.env->NewStringUTF(previewPropertyName.c_str());
+            t.env->CallStaticVoidMethod(t.classID, t.methodID, stringProps, stringActionType, stringPreviewPropertyName);
+            t.env->DeleteLocalRef(t.classID);
+            t.env->DeleteLocalRef(stringProps);
+            t.env->DeleteLocalRef(stringActionType);
+            t.env->DeleteLocalRef(stringPreviewPropertyName);
+        }    
     }
 
     bool FacebookX::canPresentWithFBApp(const h102::FBShareInfo &info) {
@@ -187,14 +266,6 @@ namespace h102 {
     }
 
     void FacebookX::api(const std::string& path, const std::string& method, const FBAPIParam& params, const std::string& tag) {
-
-    }
-
-    void FacebookX::shareOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
-
-    }
-
-    void FacebookX::shareEncodedOpenGraphStory(const FBGraphStoryProperties& properties, const std::string& actionType, const std::string& previewPropertyName) {
 
     }
 
