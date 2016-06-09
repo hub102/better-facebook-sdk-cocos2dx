@@ -438,7 +438,7 @@ bool js_h102_facebookX_logout(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			FacebookX::logout();
-            args.rval().setUndefined();
+      args.rval().setUndefined();
 			return true;
 		}
 	} while (0);
