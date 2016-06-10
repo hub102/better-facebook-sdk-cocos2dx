@@ -12,7 +12,7 @@ FILE_LIST += $(wildcard $(LOCAL_PATH)/platforms/android/*.cpp)
 
 LOCAL_SRC_FILES := $(FILE_LIST:$(LOCAL_PATH)/%=%)
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/Classes \
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/Classes \
 					$(LOCAL_PATH)/Classes/js-bindings \
                     $(LOCAL_PATH)/platforms/android
 
