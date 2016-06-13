@@ -210,6 +210,14 @@ public class FacebookX {
         });
     }
 
+    private static void onAPIFailedWrapper(final String tag, final String msg) {
+        FacebookX.runOnGLThread(new Runnable() {
+            public void run() {
+                FacebookX.onAPI(tag, msg);
+            }
+        });
+    }
+
     private static void onFetchFriendsWrapper(final boolean ok, final String data) {
         FacebookX.runOnGLThread(new Runnable() {
             public void run() {
@@ -302,7 +310,7 @@ public class FacebookX {
 
     public static void login(String permissions) {
         if (FacebookX.isLoggedIn()) {
-            onLoginWrapper(true, "Player is already logged in");
+            onLoginWrapper(true, "Logged in already");
         } else {
             String[] permissionsArray = permissions.split(";");
             List<String> permissionNeeds = Arrays.asList(permissionsArray);
@@ -315,7 +323,7 @@ public class FacebookX {
                     }
                     @Override
                     public void onCancel() {
-                        FacebookX.onLoginWrapper(false, null);
+                        FacebookX.onLoginWrapper(false, "Login cancelled");
                     }
 
 
@@ -542,9 +550,9 @@ public class FacebookX {
                 if (graphResponse.getJSONObject() != null) {
                     FacebookX.onAPIWrapper(tag, graphResponse.getJSONObject().toString());
                 }
-//                else {
-//                    FacebookX.onRequestInvitableFriendsWrapper(null);
-//                }
+                else {
+                    FacebookX.onAPIFailedWrapper(tag, graphResponse.toString());
+                }
             }
         });
         request.executeAsync();
@@ -597,6 +605,8 @@ public class FacebookX {
     private static native void onLogin(boolean isLoggedIn, String msg);
 
     private static native void onAPI(String tag, String jsonData);
+
+    private static native void onAPIFailed(String tag, String msg);
 
     private static native void onFetchFriends(boolean ok, String msg);
 

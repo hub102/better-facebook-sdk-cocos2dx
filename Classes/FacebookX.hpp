@@ -197,6 +197,7 @@ namespace h102 {
         virtual void onSharedFailed(const std::string& message) = 0;
         virtual void onSharedCancel() = 0;
         virtual void onAPI(const std::string& key, const std::string& jsonData) = 0;
+        virtual void onAPIFailed(const std::string& key, const std::string& msg) = 0;
         virtual void onPermission(bool isLogin, const std::string& msg) = 0;
         virtual void onFetchFriends(bool ok, const std::string& msg) = 0;
         virtual void onRequestInvitableFriends( const FBInvitableFriendsInfo& friends ) = 0;

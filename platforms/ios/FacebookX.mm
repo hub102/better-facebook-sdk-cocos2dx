@@ -213,8 +213,12 @@ namespace h102 {
                                  listener->onAPI([_tag UTF8String], cStringResult);
                              }
                          }
-                     } else
+                     } else {
                          NSLog(@"%@", error);
+                         if (FacebookX::listener) {
+                          listener->onAPIFailed([_tag UTF8String], cStringResult);
+                        }
+                      }
                  }];
             } else { //if (![_method isEqualToString:@""]) {
                 [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params]
@@ -228,8 +232,12 @@ namespace h102 {
                                  listener->onAPI([_tag UTF8String], cStringResult);
                              }
                          }
-                     } else
+                     } else {
                          NSLog(@"%@", error);
+                        if (FacebookX::listener) {
+                          listener->onAPI([_tag UTF8String], cStringResult);
+                        }
+                       }
                  }];
             } //else {
 //                [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]

@@ -13,6 +13,8 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onLogin(JNIEnv* env, 
     jboolean isLoggedIn, jstring msg);
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPI(JNIEnv* env, jobject thiz, 
     jstring tag, jstring jsonData);
+JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPIFailed(JNIEnv* env, jobject thiz, 
+    jstring tag, jstring msg);
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onSharedSuccess(JNIEnv* env, jobject thiz, 
     jstring msg);
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onSharedFailed(JNIEnv* env, jobject thiz, 
@@ -47,6 +49,20 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPI(JNIEnv* env, jo
         listener->onAPI(cppTag, cppJsonData);
         env->ReleaseStringUTFChars(tag, cTag);
         env->ReleaseStringUTFChars(jsonData, cJsonData);
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPIFailed(JNIEnv* env, jobject thiz, 
+    jstring tag, jstring msg) {
+    h102::FacebookListener* listener = h102::FacebookX::getListener();
+    if (listener) {
+        const char* cMsg= env->GetStringUTFChars(jsonData, NULL);
+        const char* cTag = env->GetStringUTFChars(tag, NULL);
+        string cppMsg = string(cMsg);
+        string cppTag = string(cTag);
+        listener->onAPI(cppTag, cppMsg);
+        env->ReleaseStringUTFChars(tag, cTag);
+        env->ReleaseStringUTFChars(msg, cMsg);
     }
 }
 

@@ -228,6 +228,14 @@ public:
         dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
         invokeDelegate(name, dataVal, 2);
     }
+    virtual void onAPIFailed(const std::string& tag, const std::string& msg)
+    {
+        std::string name("onAPIFailed");
+        jsval dataVal[2];
+        dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
+        dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
     virtual void onPermission(bool isLogin, const std::string& error)
     {
         std::string name("onPermission");
