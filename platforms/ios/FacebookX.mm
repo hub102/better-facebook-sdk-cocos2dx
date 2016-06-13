@@ -316,10 +316,10 @@ namespace h102 {
         NSString* image = [NSString stringWithUTF8String:properties.image.c_str()];
         NSString* url = [NSString stringWithUTF8String:properties.url.c_str()];
         NSString* _actionType = [NSString stringWithUTF8String:actionType.c_str()];
-        _actionType = toDecodedString(_actionType);
         NSString* _previewPropertyName = [NSString stringWithUTF8String:previewPropertyName.c_str()];
-        _previewPropertyName = toDecodedString(_previewPropertyName);
         
+        _actionType = toDecodedString(_actionType);
+        _previewPropertyName = toDecodedString(_previewPropertyName);
         objectType = toDecodedString(objectType);
         title = toDecodedString(title);
         description = toDecodedString(description);
