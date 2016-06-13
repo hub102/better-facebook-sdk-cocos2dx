@@ -66,7 +66,6 @@ public class FacebookX {
     private static GameRequestDialog requestDialog;
     private static AccessTokenTracker mAccessTokenTracker = null;
     private boolean _userInfoRequested = false;
-    private static boolean mLoggedIn = false;
 
     protected static Method _reflectRunOnGLThread = null;
 
@@ -110,9 +109,10 @@ public class FacebookX {
         return (Activity)mContext;
     }
 
-    public static void setLoggedIn(boolean loggedIn) { mLoggedIn = loggedIn; }
-
-    public static boolean isLoggedIn() { return mLoggedIn; }
+    public static boolean isLoggedIn() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
+    }
 
     public static void runOnGLThread(Runnable r) {
         if (_reflectRunOnGLThread != null) {
@@ -349,7 +349,7 @@ public class FacebookX {
     }
 
     public static String getUserID() {
-        return Profile.getCurrentProfile().getId();
+        return Profile.getCurrentProfile() != null ? Profile.getCurrentProfile().getId() : "";
     }
 
     public static String getName() {
