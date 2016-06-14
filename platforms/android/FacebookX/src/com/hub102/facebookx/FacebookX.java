@@ -25,6 +25,7 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.LoggingBehavior;
 import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
@@ -65,7 +66,9 @@ public class FacebookX {
     private static AppInviteDialog inviteDialog;
     private static GameRequestDialog requestDialog;
     private static AccessTokenTracker mAccessTokenTracker = null;
-    private boolean _userInfoRequested = false;
+    private static ProfileTracker mProfileTracker = null;
+    private static boolean isLogin = false;
+//    private boolean _userInfoRequested = false;
 
     protected static Method _reflectRunOnGLThread = null;
 
@@ -104,14 +107,20 @@ public class FacebookX {
         return mCallbackManager;
     }
     public static AccessTokenTracker getAccessTokenTracker() { return mAccessTokenTracker; };
+    public static ProfileTracker getProfileTracker() { return mProfileTracker; };
 
     private static Activity getActivity() {
         return (Activity)mContext;
     }
 
     public static boolean isLoggedIn() {
-        AccessToken accessToken = AccessToken.getCurrentAccessToken();
-        return accessToken != null;
+//        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+//        return accessToken != null;
+        return FacebookX.isLogin;
+    }
+
+    public static void setLoggedIn(boolean trueOrFalse) {
+        FacebookX.isLogin = trueOrFalse;
     }
 
     public static void runOnGLThread(Runnable r) {
@@ -258,6 +267,16 @@ public class FacebookX {
         });
     }
 
+    public static void onGetUserInfoWrapper(final String userInfo) {
+        Log.v("Java", "onGetUserInfoWrapper: " + userInfo);
+        FacebookX.runOnGLThread(new Runnable() {
+            @Override
+            public void run() {
+                FacebookX.onGetUserInfo(userInfo);
+            }
+        });
+    }
+
     private static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultValue) {
         return map.containsKey(key)?map.get(key):defaultValue;
     }
@@ -344,16 +363,25 @@ public class FacebookX {
         if (AccessToken.getCurrentAccessToken() != null) {
             return AccessToken.getCurrentAccessToken().getToken();
         } else {
-            return null;
+            return "";
         }
     }
 
     public static String getUserID() {
-        return Profile.getCurrentProfile() != null ? Profile.getCurrentProfile().getId() : "";
+//        return Profile.getCurrentProfile() != null ? Profile.getCurrentProfile().getId() : "";
+        if (Profile.getCurrentProfile() != null) {
+            return Profile.getCurrentProfile().getId();
+        } else {
+            return "";
+        }
     }
 
     public static String getName() {
-        return Profile.getCurrentProfile().getName();
+        if (Profile.getCurrentProfile() != null) {
+            return Profile.getCurrentProfile().getName();
+        } else {
+            return "";
+        }
     }
 
     public static Arrays getPermissionList() {
@@ -519,6 +547,7 @@ public class FacebookX {
             @Override
             public void onCompleted(GraphResponse graphResponse) {
                 if (graphResponse.getJSONObject() != null) {
+                    Log.v("java", graphResponse.getJSONObject().toString());
                     FacebookX.onRequestInvitableFriendsWrapper(graphResponse.getJSONObject().toString());
                 }
 //                else {
@@ -624,5 +653,5 @@ public class FacebookX {
 
     private static native void onInviteFriendsResult(boolean ok, String msg);
 
-    private static native void onUserInfo(String userInfo);
+    private static native void onGetUserInfo(String userInfo);
 }

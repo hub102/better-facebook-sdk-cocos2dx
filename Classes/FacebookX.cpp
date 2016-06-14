@@ -133,10 +133,10 @@ namespace h102 {
             setField(kGU_LAST_NAME, json["last_name"].get<string>());
         
         if (json.find("first_name") != json.end() && json["first_name"].is_string())
-            setField(kGU_LAST_NAME, json["first_name"].get<string>());
+            setField(kGU_FIRST_NAME, json["first_name"].get<string>());
         
         if (json.find("email") != json.end() && json["email"].is_string())
-            setField(kGU_LAST_NAME, json["email"].get<string>());
+            setField(kGU_EMAIL, json["email"].get<string>());
     }
     
 #pragma make FBInvitableUsersCursor

@@ -7,6 +7,8 @@
 using namespace std;
 using namespace cocos2d;
 
+using Json = nlohmann::json;
+
 extern "C"
 {
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onLogin(JNIEnv* env, jobject thiz, 
@@ -24,6 +26,8 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onRequestInvitableFri
     jstring friends);
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onInviteFriendsWithInviteIdsResult(JNIEnv* env, 
     jobject thiz, jboolean ok, jstring msg);
+JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onGetUserInfo(JNIEnv* env, jobject thiz, 
+    jstring userInfo);
 };
 
 JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onLogin(JNIEnv* env, jobject thiz, 
@@ -56,7 +60,7 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onAPIFailed(JNIEnv* e
     jstring tag, jstring msg) {
     h102::FacebookListener* listener = h102::FacebookX::getListener();
     if (listener) {
-        const char* cMsg= env->GetStringUTFChars(jsonData, NULL);
+        const char* cMsg= env->GetStringUTFChars(msg, NULL);
         const char* cTag = env->GetStringUTFChars(tag, NULL);
         string cppMsg = string(cMsg);
         string cppTag = string(cTag);
@@ -115,6 +119,37 @@ JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onInviteFriendsWithIn
         bool cppOk = ok;
         listener->onInviteFriendsWithInviteIdsResult(cppOk, cppMsg);
         env->ReleaseStringUTFChars(msg, cMsg);
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_hub102_facebookx_FacebookX_onGetUserInfo(JNIEnv* env, jobject thiz, 
+    jstring userInfo) {
+    h102::FacebookListener* listener = h102::FacebookX::getListener();
+    if (listener) {
+        const char* cUserInfo = env->GetStringUTFChars(userInfo, NULL);
+        string cppUserInfo = string(cUserInfo);
+        h102::FBGraphUser user;
+        auto json = Json::parse(cppUserInfo);
+        if (json.find("id") != json.end() && json["id"].is_string()) {
+            user.setField("id", json["id"].get<string>());
+        }
+        if (json.find("name") != json.end() && json["name"].is_string()) {
+            user.setField("name", json["name"].get<string>());   
+        }
+        if (json.find("first_name") != json.end() && json["first_name"].is_string()) {
+            user.setField("first_name", json["first_name"].get<string>());  
+        }
+        if (json.find("middle_name") != json.end() && json["middle_name"].is_string()) {
+            user.setField("first_name", json["first_name"].get<string>());  
+        }
+        if (json.find("last_name") != json.end() && json["last_name"].is_string()) {
+            user.setField("last_name", json["last_name"].get<string>());  
+        }
+        if (json.find("link_uri") != json.end() && json["link_uri"].is_string()) {
+            user.setField("link_uri", json["link_uri"].get<string>());  
+        }
+        listener->onGetUserInfo(user);
+        env->ReleaseStringUTFChars(userInfo, cUserInfo);
     }
 }
 

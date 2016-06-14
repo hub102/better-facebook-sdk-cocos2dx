@@ -233,7 +233,7 @@ public:
         std::string name("onAPIFailed");
         jsval dataVal[2];
         dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
-        dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
+        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onPermission(bool isLogin, const std::string& error)
