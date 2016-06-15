@@ -79,19 +79,19 @@ namespace h102 {
                                            } else {
                                                [FBSDKProfile enableUpdatesOnAccessTokenChange:YES];
                                                if (FacebookX::listener) {
-//                                                   [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/" parameters:nil]
-//                                                    startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
-//                                                        if (!error) {
-//                                                            if (FacebookX::listener) {
-//                                                                NSString* myName = [result objectForKey:@"name"];
-//                                                                NSString* myID = [result objectForKey:@"id"];
-//                                                                FBGraphUser myInfo = FBGraphUser();
-//                                                                myInfo.setField(FBGraphUser::kGU_NAME, std::string([myName UTF8String]));
-//                                                                myInfo.setField(FBGraphUser::kGU_USERID, std::string([myID UTF8String]));
-//                                                                listener->onGetUserInfo(myInfo);
-//                                                            }
-//                                                        }
-//                                                    }];
+                                                  [[[FBSDKGraphRequest alloc] initWithGraphPath:@"/me/" parameters:nil]
+                                                   startWithCompletionHandler:^(FBSDKGraphRequestConnection *connection, id result, NSError *error) {
+                                                       if (!error) {
+                                                           if (FacebookX::listener) {
+                                                               NSString* myName = [result objectForKey:@"name"];
+                                                               NSString* myID = [result objectForKey:@"id"];
+                                                               FBGraphUser myInfo = FBGraphUser();
+                                                               myInfo.setField(FBGraphUser::kGU_NAME, std::string([myName UTF8String]));
+                                                               myInfo.setField(FBGraphUser::kGU_USERID, std::string([myID UTF8String]));
+                                                               listener->onGetUserInfo(myInfo);
+                                                           }
+                                                       }
+                                                   }];
                                                    listener->onLogin(true, "LoggedIn");
                                                }
                                            }
@@ -99,6 +99,8 @@ namespace h102 {
     }
     
     std::string FacebookX::getAccessToken() {
+        if (!FacebookX::isLoggedIn())
+            return "";
         return [[[FBSDKAccessToken currentAccessToken] tokenString] UTF8String];
     }
     
@@ -216,9 +218,9 @@ namespace h102 {
                      } else {
                          NSLog(@"%@", error);
                          if (FacebookX::listener) {
-                          listener->onAPIFailed([_tag UTF8String], cStringResult);
-                        }
-                      }
+                          listener->onAPIFailed([_tag UTF8String], to_string(error.code));
+                         }
+                     }
                  }];
             } else { //if (![_method isEqualToString:@""]) {
                 [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:_params]
@@ -234,10 +236,10 @@ namespace h102 {
                          }
                      } else {
                          NSLog(@"%@", error);
-                        if (FacebookX::listener) {
-                          listener->onAPI([_tag UTF8String], cStringResult);
-                        }
-                       }
+                         if (FacebookX::listener) {
+                             listener->onAPI([_tag UTF8String], to_string(error.code));
+                         }
+                     }
                  }];
             } //else {
 //                [[[FBSDKGraphRequest alloc] initWithGraphPath:_path parameters:nil]
