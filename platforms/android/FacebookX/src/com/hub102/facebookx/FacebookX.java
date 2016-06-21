@@ -114,9 +114,9 @@ public class FacebookX {
     }
 
     public static boolean isLoggedIn() {
-//        AccessToken accessToken = AccessToken.getCurrentAccessToken();
-//        return accessToken != null;
-        return FacebookX.isLogin;
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
+//        return FacebookX.isLogin;
     }
 
     public static void setLoggedIn(boolean trueOrFalse) {
@@ -150,11 +150,19 @@ public class FacebookX {
         mCallbackManager = CallbackManager.Factory.create();
 
         try {
-            FacebookX.runOnMainThread((Runnable)new Runnable(){
+            mAccessTokenTracker = new AccessTokenTracker() {
+                @Override
+                protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                    Log.d(TAG,"onCurrentAccessTokenChanged");
+
+                }
+            };
+
+            FacebookX.runOnMainThread(new Runnable(){
 
                 public void run() {
                     FacebookX.shareDialog = new ShareDialog(FacebookX.getActivity());
-                    FacebookX.shareDialog.registerCallback(FacebookX.getCallbackManager(), (FacebookCallback)new FacebookCallback<Sharer.Result>(){
+                    FacebookX.shareDialog.registerCallback(FacebookX.getCallbackManager(), new FacebookCallback<Sharer.Result>(){
 
                         public void onSuccess(Sharer.Result result) {
                             String ret = "{\"postId\":\"" + result.getPostId() + "\"}";
@@ -278,7 +286,7 @@ public class FacebookX {
     }
 
     private static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultValue) {
-        return map.containsKey(key)?map.get(key):defaultValue;
+        return map.containsKey(key) ? map.get(key) : defaultValue;
     }
 
     private String convertSetString2String(Set<String> permissionSet) {
@@ -405,7 +413,7 @@ public class FacebookX {
         try {
             final String shareType = FacebookX.getOrDefault(info, "type", FB_NONE);
             final int type = 2;
-            if (isConnectionAvailable() == false) {
+            if (!isConnectionAvailable()) {
                 FacebookX.onSharedFailedWrapper("Connection not available");
                 return;
             }
@@ -413,28 +421,26 @@ public class FacebookX {
                 FacebookX.onSharedFailedWrapper("Share type not available");
                 return;
             }
-            FacebookX.runOnMainThread((Runnable)new Runnable() {
+            FacebookX.runOnMainThread(new Runnable() {
                 public void run() {
                     if (shareType.equals(FB_LINK)) {
-                        String value = null;
                         ShareLinkContent.Builder contentBuilder = new ShareLinkContent.Builder();
-                        value = (String)FacebookX.getOrDefault(info, "link", "");
+                        String value = FacebookX.getOrDefault(info, "link", "");
                         if (value.length() > 0) {
-                            contentBuilder = (ShareLinkContent.Builder)contentBuilder.setContentUrl(
-                                Uri.parse((String)value));
+                            contentBuilder = contentBuilder.setContentUrl(Uri.parse(value));
                         }
-                        if ((value = (String)FacebookX.getOrDefault(info, "title", "")).length() > 0) {
+                        if ((value = FacebookX.getOrDefault(info, "title", "")).length() > 0) {
                             contentBuilder = contentBuilder.setContentTitle(value);
                         }
-                        if ((value = (String)FacebookX.getOrDefault(info, "text", "")).length() > 0) {
+                        if ((value = FacebookX.getOrDefault(info, "text", "")).length() > 0) {
                             contentBuilder = contentBuilder.setContentDescription(value);
                         }
-                        if ((value = (String)FacebookX.getOrDefault(info, "image", "")).length() > 0) {
-                            contentBuilder = contentBuilder.setImageUrl(Uri.parse((String)value));
+                        if ((value = FacebookX.getOrDefault(info, "media", "")).length() > 0) {
+                            contentBuilder = contentBuilder.setImageUrl(Uri.parse(value));
                         }
                         ShareLinkContent content = contentBuilder.build();
                         if (type == 1) {
-                            ShareApi.share((ShareContent)content, (FacebookCallback)new FacebookCallback<Sharer.Result>(){
+                            ShareApi.share(content, new FacebookCallback<Sharer.Result>(){
                                 public void onSuccess(Sharer.Result result) {
                                     String ret = "{\"postId\":\"" + result.getPostId() + "\"}";
                                     FacebookX.onSharedSuccessWrapper(ret);
@@ -453,11 +459,11 @@ public class FacebookX {
                             FacebookX.shareDialog.show(content);
                         }
                     } else if (shareType.equals(FB_PHOTO)) {
-                        Bitmap image = BitmapFactory.decodeFile((String)FacebookX.getOrDefault(info, "image", ""));
+                        Bitmap image = BitmapFactory.decodeFile(FacebookX.getOrDefault(info, "media", ""));
                         SharePhoto photo = new SharePhoto.Builder().setBitmap(image).build();
                         SharePhotoContent content = new SharePhotoContent.Builder().addPhoto(photo).build();
                         if (type == 1) {
-                            ShareApi.share((ShareContent)content, (FacebookCallback)new FacebookCallback<Sharer.Result>() {
+                            ShareApi.share(content, new FacebookCallback<Sharer.Result>() {
                                 public void onSuccess(Sharer.Result result) {
                                     String ret = "{\"postId\":\"" + result.getPostId() + "\"}";
                                     FacebookX.onSharedSuccessWrapper(ret);
@@ -502,13 +508,13 @@ public class FacebookX {
     }
 
     public static void shareOpenGraphStory(final Map<String, String> properties, final String actionType, final String previewPropertyName) {
-        String type = (String)FacebookX.getOrDefault(properties, "type", "");
-        String title = (String)FacebookX.getOrDefault(properties, "title", "");
-        String description = (String)FacebookX.getOrDefault(properties, "description", "");
-        String image = (String)FacebookX.getOrDefault(properties, "image", "");
-        String url = (String)FacebookX.getOrDefault(properties, "url", "");
+        String type = FacebookX.getOrDefault(properties, "type", "");
+        String title = FacebookX.getOrDefault(properties, "title", "");
+        String description = FacebookX.getOrDefault(properties, "description", "");
+        String image = FacebookX.getOrDefault(properties, "image", "");
+        String url = FacebookX.getOrDefault(properties, "url", "");
 
-        if (isConnectionAvailable() == false) {
+        if (!isConnectionAvailable()) {
             FacebookX.onSharedFailedWrapper("Connection not available");
             return;
         }

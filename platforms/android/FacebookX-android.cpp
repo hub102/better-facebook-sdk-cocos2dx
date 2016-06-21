@@ -3,6 +3,7 @@
 #if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 #include "platform/android/jni/JniHelper.h"
 #include <iostream>
+#include <android/log.h>
 
 using namespace std;
 using namespace cocos2d;

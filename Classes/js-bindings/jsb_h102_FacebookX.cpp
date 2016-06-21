@@ -477,7 +477,7 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 1) {
 			std::map<std::string, std::string> arg0;
-      ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+            ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
 			JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_share : Error processing arguments");
 			FacebookX::share(map_to_FBShareInfo(arg0));
 			args.rval().setUndefined();
@@ -688,12 +688,12 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 		JS_FN("login", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserID", js_h102_facebookX_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-    JS_FN("getName", js_h102_facebookX_getName, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("getName", js_h102_facebookX_getName, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("isLoggedIn", js_h102_facebookX_isLoggedIn, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("logout", js_h102_facebookX_logout, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("share", js_h102_facebookX_share, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-    JS_FN("shareEncodedContent", js_h102_facebookX_shareEncodedContent, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("shareEncodedContent", js_h102_facebookX_shareEncodedContent, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("api", js_h102_facebookX_api, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("shareEncodedOpenGraphStory", js_h102_facebookX_shareEncodedOpenGraphStory, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("canPresentWithFBApp", js_h102_facebookX_canPresentWithFBApp, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
