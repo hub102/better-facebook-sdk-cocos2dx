@@ -197,6 +197,7 @@ namespace h102 {
         virtual void onSharedFailed(const std::string& message) = 0;
         virtual void onSharedCancel() = 0;
         virtual void onAPI(const std::string& key, const std::string& jsonData) = 0;
+        virtual void onAPIFailed(const std::string& key, const std::string& msg) = 0;
         virtual void onPermission(bool isLogin, const std::string& msg) = 0;
         virtual void onFetchFriends(bool ok, const std::string& msg) = 0;
         virtual void onRequestInvitableFriends( const FBInvitableFriendsInfo& friends ) = 0;
@@ -211,6 +212,7 @@ namespace h102 {
     public:
         static void init();
         static void setListener(FacebookListener* listener);
+        static FacebookListener* getListener();
         
         static void login();
         static void login( std::vector<std::string>& permissions );
@@ -222,6 +224,7 @@ namespace h102 {
         static std::vector<std::string> getPermissionList();
         
         static void share(const FBShareInfo& info);
+        static void shareEncodedContent(const FBShareInfo& info);
         
         static void api(const std::string& path, const std::string& tag);
         static void api(const std::string& path, const FBAPIParam& params, const std::string& tag);

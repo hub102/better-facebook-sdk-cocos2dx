@@ -228,6 +228,14 @@ public:
         dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
         invokeDelegate(name, dataVal, 2);
     }
+    virtual void onAPIFailed(const std::string& tag, const std::string& msg)
+    {
+        std::string name("onAPIFailed");
+        jsval dataVal[2];
+        dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
+        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        invokeDelegate(name, dataVal, 2);
+    }
     virtual void onPermission(bool isLogin, const std::string& error)
     {
         std::string name("onPermission");
@@ -438,7 +446,7 @@ bool js_h102_facebookX_logout(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			FacebookX::logout();
-            args.rval().setUndefined();
+      args.rval().setUndefined();
 			return true;
 		}
 	} while (0);
@@ -478,6 +486,24 @@ bool js_h102_facebookX_share(JSContext *cx, uint32_t argc, jsval *vp) {
 	} while (0);
 
     JS_ReportError(cx, "js_h102_facebookX_share : wrong number of arguments");
+    return false;
+}
+
+bool js_h102_facebookX_shareEncodedContent(JSContext *cx, uint32_t argc, jsval *vp) {
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+    bool ok = true;
+    do {
+        if (argc == 1) {
+            std::map<std::string, std::string> arg0;
+            ok &= h102::jsval_to_std_map_string_string(cx, args.get(0), &arg0);
+            JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_shareEncodedContent : Error processing arguments");
+            FacebookX::shareEncodedContent(map_to_FBShareInfo(arg0));
+            args.rval().setUndefined();
+            return true;
+        }
+    } while (0);
+
+    JS_ReportError(cx, "js_h102_facebookX_shareEncodedContent : wrong number of arguments");
     return false;
 }
 
@@ -557,7 +583,7 @@ bool js_h102_facebookX_shareEncodedOpenGraphStory(JSContext *cx, uint32_t argc, 
     	}
 	} while(0);
 
-    JS_ReportError(cx, "js_h102_facebookX_shareOpenGraphStory : wrong number of arguments");
+    JS_ReportError(cx, "js_h102_facebookX_shareEncodedOpenGraphStory : wrong number of arguments");
     return false;
 }
 
@@ -660,24 +686,19 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 
 	static JSFunctionSpec st_funcs[] = {
 		JS_FN("login", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, 
-			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserID", js_h102_facebookX_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
         JS_FN("getName", js_h102_facebookX_getName, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("isLoggedIn", js_h102_facebookX_isLoggedIn, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("logout", js_h102_facebookX_logout, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, 
-			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("getPermissionList", js_h102_facebookX_getPermissionList, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("share", js_h102_facebookX_share, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+        JS_FN("shareEncodedContent", js_h102_facebookX_shareEncodedContent, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("api", js_h102_facebookX_api, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("shareEncodedOpenGraphStory", js_h102_facebookX_shareEncodedOpenGraphStory, 
-			0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("canPresentWithFBApp", js_h102_facebookX_canPresentWithFBApp, 0, 
-			JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("requestInvitableFriends", js_h102_facebookX_requestInvitableFriends, 0, 
-			JSPROP_PERMANENT | JSPROP_ENUMERATE),
-		JS_FN("inviteFriendsWithInviteIds", js_h102_facebookX_inviteFriendsWithInviteIds, 0, 
-			JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("shareEncodedOpenGraphStory", js_h102_facebookX_shareEncodedOpenGraphStory, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("canPresentWithFBApp", js_h102_facebookX_canPresentWithFBApp, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("requestInvitableFriends", js_h102_facebookX_requestInvitableFriends, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
+		JS_FN("inviteFriendsWithInviteIds", js_h102_facebookX_inviteFriendsWithInviteIds, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("setListener", js_h102_facebookX_setListener, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 	};
 
