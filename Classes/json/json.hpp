@@ -80,7 +80,7 @@ Class @ref nlohmann::basic_json is a good entry point for the documentation.
     using ssize_t = SSIZE_T;
 #endif
 
-#ifdef __ANDROID__
+// #ifdef __ANDROID__
     // Workaround for Android NDK builds (version r10e) that does not support std::to_string and std::strold so far
     namespace std
     {
@@ -101,7 +101,7 @@ Class @ref nlohmann::basic_json is a good entry point for the documentation.
             return strtod(str, str_end);
         }
     }
-#endif
+// #endif
 
 /*!
 @brief namespace for Niels Lohmann

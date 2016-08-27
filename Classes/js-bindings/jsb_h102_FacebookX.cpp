@@ -309,15 +309,23 @@ bool js_h102_facebookX_constructor(JSContext *cx, uint32_t argc, jsval* vp)
 	typeClass = typeMapIter->second;
 	CCASSERT(typeClass, "The value is null.");
 
-	JS::RootedObject proto(cx, typeClass->proto.get());
-	JS::RootedObject parent(cx, typeClass->parentProto.get());
+//    js_type_class_t *typeClass = js_get_type_from_native<h102::FacebookX>(cobj);
+    
+	JS::RootedObject proto(cx, typeClass->proto.ref());
+	JS::RootedObject parent(cx, typeClass->parentProto.ref());
 	JS::RootedObject obj(cx, JS_NewObject(cx, typeClass->jsclass, proto, parent));
+//    JS::RootedObject obj(cx, jsb_ref_create_jsobject(cx, cobj, typeClass, "h102::FacebookX"));
 
 	js_proxy_t* p = jsb_new_proxy(cobj, obj);
 	AddNamedObjectRoot(cx, &p->obj, "FacebookX");
 	if (JS_HasProperty(cx, obj, "_ctor", &ok) && ok)
 		ScriptingCore::getInstance()->executeFunctionWithOwner(OBJECT_TO_JSVAL(obj), "_ctor", args);
 	return true;
+//    JS::RootedObject jsobj(cx, jsb_ref_create_jsobject(cx, cobj, typeClass, "h102::FacebookX"));
+//    args.rval().set(OBJECT_TO_JSVAL(jsobj));
+//    if (JS_HasProperty(cx, jsobj, "_ctor", &ok) && ok)
+//        ScriptingCore::getInstance()->executeFunctionWithOwner(OBJECT_TO_JSVAL(jsobj), "_ctor", args);
+//    return true;
 }
 
 bool js_h102_facebookX_init(JSContext *cx, uint32_t argc, jsval *vp) {
@@ -685,6 +693,7 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 	};
 
 	static JSFunctionSpec st_funcs[] = {
+        JS_FN("init", js_h102_facebookX_init, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("login", js_h102_facebookX_login, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getAccessToken", js_h102_facebookX_getAccessToken, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
 		JS_FN("getUserID", js_h102_facebookX_getUserID, 0, JSPROP_PERMANENT | JSPROP_ENUMERATE),
@@ -712,17 +721,24 @@ void js_register_h102_facebookX(JSContext *cx, JS::HandleObject global) {
 										NULL, //no static properties
 										st_funcs);
 
-	TypeTest<FacebookX> t;
-	js_type_class_t *p;
-	std::string typeName = t.s_name();
-	if (_js_global_type_map.find(typeName) == _js_global_type_map.end()) 
-	{
-		p = (js_type_class_t *)malloc(sizeof(js_type_class_t));
-		p->jsclass = jsb_h102_facebookX_class;
-		p->proto = jsb_h102_facebookX_prototype;
-		p->parentProto = NULL;
-		_js_global_type_map.insert(std::make_pair(typeName, p));
-	}
+//	TypeTest<FacebookX> t;
+//	js_type_class_t *p;
+//	std::string typeName = t.s_name();
+//	if (_js_global_type_map.find(typeName) == _js_global_type_map.end()) 
+//	{
+//		p = (js_type_class_t *)malloc(sizeof(js_type_class_t));
+//		p->jsclass = jsb_h102_facebookX_class;
+//		p->proto = jsb_h102_facebookX_prototype;
+//		p->parentProto = NULL;
+//		_js_global_type_map.insert(std::make_pair(typeName, p));
+//	}
+    JS::RootedObject proto(cx, jsb_h102_facebookX_prototype);
+    JS::RootedValue className(cx, std_string_to_jsval(cx, "FacebookX"));
+    JS_SetProperty(cx, proto, "_className", className);
+    JS_SetProperty(cx, proto, "__nativeObj", JS::TrueHandleValue);
+    JS_SetProperty(cx, proto, "__is_ref", JS::TrueHandleValue);
+    jsb_register_class<h102::FacebookX>(cx, jsb_h102_facebookX_class, proto, JS::NullPtr());
+//    anonEvaluate(cx, global, "(function () { cc.Sprite.extend = cc.Class.extend; })()");
 }
 
 void register_all_h102_facebookX(JSContext* cx, JS::HandleObject obj) {
