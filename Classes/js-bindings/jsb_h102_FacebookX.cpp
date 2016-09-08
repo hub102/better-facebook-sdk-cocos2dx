@@ -14,8 +14,6 @@
 
 using namespace h102;
 
-static JSContext* s_cx = nullptr;
-
 JSOBJECT* FBGraphUserToJS(JSContext* cx, const FBGraphUser& info) {
     
     JS_INIT_CONTEXT_FOR_UPDATE(cx);
@@ -127,15 +125,12 @@ class FacebookListenerJsHelper : public FacebookListener
 {
 private:
     void invokeDelegate(std::string& fName, jsval dataVal[], int argc) {
-        if (!s_cx) {
-            return;
-        }
-        JSContext* cx = s_cx;
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         const char* func_name = fName.c_str();
-        
-        JS::RootedObject obj(cx, mJsDelegate);
+
+        JS::RootedObject obj(cx, getJSDelegate());
         JSAutoCompartment ac(cx, obj);
-        
+
 #if MOZJS_MAJOR_VERSION >= 31
         bool hasAction;
         JS::RootedValue retval(cx);
@@ -149,7 +144,7 @@ private:
         jsval retval;
         jsval func_handle;
 #endif
-        
+
         if (JS_HasProperty(cx, obj, func_name, &hasAction) && hasAction) {
             if(!JS_GetProperty(cx, obj, func_name, &func_handle)) {
                 return;
@@ -157,7 +152,7 @@ private:
             if(func_handle == JSVAL_VOID) {
                 return;
             }
-            
+
 #if MOZJS_MAJOR_VERSION >= 31
             if (0 == argc) {
                 JS_CallFunctionName(cx, obj, func_name, JS::HandleValueArray::empty(), &retval);
@@ -176,11 +171,20 @@ private:
     
 private:
     JSObject* mJsDelegate;
+    JSFunctionWrapper *_jsFuncWrapper;
     
 public:
-    void setJSDelegate(JSObject* delegate)
+    void setJSDelegate(JS::HandleValue delegate)
     {
-        mJsDelegate = delegate;
+        mJsDelegate = delegate.toObjectOrNull();
+      
+        CC_SAFE_DELETE(_jsFuncWrapper);
+        
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
+        
+        JS::RootedObject targetObj(cx);
+        targetObj.set(mJsDelegate);
+        _jsFuncWrapper = new JSFunctionWrapper(cx, targetObj, JS::NullHandleValue);
     }
     
     JSObject* getJSDelegate()
@@ -190,96 +194,109 @@ public:
     
     FacebookListenerJsHelper() : mJsDelegate(0)
     {
+      _jsFuncWrapper = NULL;
     }
     
     virtual void onLogin(bool isLogin, const std::string& error)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onLogin");
         jsval dataVal[2];
         dataVal[0] = BOOLEAN_TO_JSVAL(isLogin);
-        dataVal[1] = c_string_to_jsval(s_cx, error.c_str());
+        dataVal[1] = c_string_to_jsval(cx, error.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onSharedSuccess(const std::string& message)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onSharedSuccess");
         jsval dataVal[1];
-        dataVal[0] = c_string_to_jsval(s_cx, message.c_str());
+        dataVal[0] = c_string_to_jsval(cx, message.c_str());
         invokeDelegate(name, dataVal, 1);
     }
     virtual void onSharedFailed(const std::string& message)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onSharedFailed");
         jsval dataVal[1];
-        dataVal[0] = c_string_to_jsval(s_cx, message.c_str());
+        dataVal[0] = c_string_to_jsval(cx, message.c_str());
         invokeDelegate(name, dataVal, 1);
     }
     virtual void onSharedCancel()
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onSharedCancel");
         jsval dataVal[0];
         invokeDelegate(name, dataVal, 0);
     }
     virtual void onAPI(const std::string& tag, const std::string& jsonData)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onAPI");
         jsval dataVal[2];
-        dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
-        dataVal[1] = c_string_to_jsval(s_cx, jsonData.c_str());
+        dataVal[0] = c_string_to_jsval(cx, tag.c_str());
+        dataVal[1] = c_string_to_jsval(cx, jsonData.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onAPIFailed(const std::string& tag, const std::string& msg)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onAPIFailed");
         jsval dataVal[2];
-        dataVal[0] = c_string_to_jsval(s_cx, tag.c_str());
-        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        dataVal[0] = c_string_to_jsval(cx, tag.c_str());
+        dataVal[1] = c_string_to_jsval(cx, msg.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onPermission(bool isLogin, const std::string& error)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onPermission");
         jsval dataVal[2];
         dataVal[0] = BOOLEAN_TO_JSVAL(isLogin);
-        dataVal[1] = c_string_to_jsval(s_cx, error.c_str());
+        dataVal[1] = c_string_to_jsval(cx, error.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onFetchFriends(bool ok, const std::string& msg)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onFetchFriends");
         jsval dataVal[2];
         dataVal[0] = BOOLEAN_TO_JSVAL(ok);
-        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        dataVal[1] = c_string_to_jsval(cx, msg.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onInviteFriendsResult(bool ok, const std::string& msg)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onInviteFriendsResult");
         jsval dataVal[2];
         dataVal[0] = BOOLEAN_TO_JSVAL(ok);
-        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        dataVal[1] = c_string_to_jsval(cx, msg.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onInviteFriendsWithInviteIdsResult(bool ok, const std::string& msg)
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onInviteFriendsWithInviteIdsResult");
         jsval dataVal[2];
         dataVal[0] = BOOLEAN_TO_JSVAL(ok);
-        dataVal[1] = c_string_to_jsval(s_cx, msg.c_str());
+        dataVal[1] = c_string_to_jsval(cx, msg.c_str());
         invokeDelegate(name, dataVal, 2);
     }
     virtual void onRequestInvitableFriends(const FBInvitableFriendsInfo& invitable_friends_and_pagination )
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onRequestInvitableFriends");
         jsval dataVal[1];
-        dataVal[0] = OBJECT_TO_JSVAL(FBInvitableFriendsInfoToJS( s_cx, invitable_friends_and_pagination));
+        dataVal[0] = OBJECT_TO_JSVAL(FBInvitableFriendsInfoToJS( cx, invitable_friends_and_pagination));
         invokeDelegate(name, dataVal, 1);
     }
     virtual void onGetUserInfo(const FBGraphUser& userInfo )
     {
+        JSContext* cx = ScriptingCore::getInstance()->getGlobalContext();
         std::string name("onGetUserInfo");
         jsval dataVal[1];
-        dataVal[0] = OBJECT_TO_JSVAL(FBGraphUserToJS( s_cx, userInfo ));
+        dataVal[0] = OBJECT_TO_JSVAL(FBGraphUserToJS( cx, userInfo ));
         invokeDelegate(name, dataVal, 1);
     }
 };
@@ -333,28 +350,24 @@ bool js_h102_facebookX_init(JSContext *cx, uint32_t argc, jsval *vp) {
 }
 
 bool js_h102_facebookX_setListener(JSContext *cx, uint32_t argc, jsval *vp) {
-    s_cx = cx;
     JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
     bool ok = true;
-    
-    do {
-	    if (argc == 1) {
-	        
-	        if (!args.get(0).isObject())
-	        {
-	            ok = false;
-	        }
-	        JSObject *tmpObj = args.get(0).toObjectOrNull();
-	        
-	        JSB_PRECONDITION2(ok, cx, false, "js_h102_facebookX_setListener : Error processing arguments");
-	        FacebookListenerJsHelper* lis = new FacebookListenerJsHelper();
-	        lis->setJSDelegate(tmpObj);
-	        FacebookX::setListener(lis);
-	        
-	        args.rval().setUndefined();
-	        return true;
-	    }
-	} while (0);
+  
+    if (argc == 1) {
+        
+      if (!args.get(0).isObject())
+      {
+        ok = false;
+      }
+      
+      JSB_PRECONDITION2(ok, cx, false, "js_PluginFacebookJS_PluginFacebook_setListener : Error processing arguments");
+      FacebookListenerJsHelper* lis = new FacebookListenerJsHelper();
+      lis->setJSDelegate(args.get(0));
+      FacebookX::setListener(lis);
+      
+      args.rval().setUndefined();
+      return true;
+    }
 
     JS_ReportError(cx, "js_h102_facebookX_setListener : wrong number of arguments");
     return false;
@@ -390,8 +403,7 @@ bool js_h102_facebookX_getAccessToken(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			std::string ret = FacebookX::getAccessToken();
-			jsval jsret = JSVAL_NULL;
-			jsret = std_string_to_jsval(cx, ret);
+			jsval jsret = std_string_to_jsval(cx, ret);
 			args.rval().set(jsret);
 			return true;
 		}
@@ -406,8 +418,7 @@ bool js_h102_facebookX_getUserID(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			std::string ret = FacebookX::getUserID();
-			jsval jsret = JSVAL_NULL;
-			jsret = std_string_to_jsval(cx, ret);
+			jsval jsret = std_string_to_jsval(cx, ret);
 			args.rval().set(jsret);
 			return true;
 		}
@@ -422,8 +433,7 @@ bool js_h102_facebookX_getName(JSContext *cx, uint32_t argc, jsval *vp) {
     do {
         if (argc == 0) {
             std::string ret = FacebookX::getName();
-            jsval jsret = JSVAL_NULL;
-            jsret = std_string_to_jsval(cx, ret);
+            jsval jsret = std_string_to_jsval(cx, ret);
             args.rval().set(jsret);
             return true;
         }
@@ -438,8 +448,7 @@ bool js_h102_facebookX_isLoggedIn(JSContext *cx, uint32_t argc, jsval *vp) {
 	do {
 		if (argc == 0) {
 			bool ret = FacebookX::isLoggedIn();
-			jsval jsret = JSVAL_NULL;
-			jsret = BOOLEAN_TO_JSVAL(ret);
+			jsval jsret = BOOLEAN_TO_JSVAL(ret);
 			args.rval().set(jsret);
 			return true;
 		}
@@ -468,9 +477,8 @@ bool js_h102_facebookX_getPermissionList(JSContext *cx, uint32_t argc, jsval *vp
 	do {
 		if (argc == 0) {
 			std::vector <std::string> ret = FacebookX::getPermissionList();
-			jsval jsret = JSVAL_NULL;
-			jsret = std_vector_string_to_jsval(cx, ret);
-            args.rval().set(jsret);
+			jsval jsret = std_vector_string_to_jsval(cx, ret);
+      args.rval().set(jsret);
 			return true;
 		}
 	} while (0);
