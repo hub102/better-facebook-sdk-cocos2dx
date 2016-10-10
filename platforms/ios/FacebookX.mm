@@ -167,8 +167,15 @@ namespace h102 {
                                         delegate:delegate];
     }
 
-    void FacebookX::shareEncodedContent(const FBShareInfo& info) {
+    void FacebookX::shareEncodedContent(const FBShareInfo& pInfo) {
+        FBShareInfo info;
+        info.type = pInfo.type;
+        info.link = [toDecodedString([NSString stringWithUTF8String:pInfo.link.c_str()]) UTF8String];
+        info.title = [toDecodedString([NSString stringWithUTF8String:pInfo.title.c_str()]) UTF8String];
+        info.text = [toDecodedString([NSString stringWithUTF8String:pInfo.text.c_str()]) UTF8String];
+        info.media = [toDecodedString([NSString stringWithUTF8String:pInfo.media.c_str()]) UTF8String];
         
+        FacebookX::share(info);
     }
     
     bool FacebookX::canPresentWithFBApp(const h102::FBShareInfo &info) {
