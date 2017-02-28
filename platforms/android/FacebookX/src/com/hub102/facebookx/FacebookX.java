@@ -182,15 +182,15 @@ public class FacebookX {
                             new FacebookCallback<GameRequestDialog.Result>() {
                                 @Override
                                 public void onSuccess(GameRequestDialog.Result result) {
-                                    onInviteFriendsWithInviteIdsResult(true, result.toString());
+                                    FacebookX.onInvitedWrapper(true, result.toString());
                                 }
                                 @Override
                                 public void onCancel() {
-                                    onInviteFriendsWithInviteIdsResult(false, "Request cancelled");
+                                    FacebookX.onInvitedWrapper(false, "Request cancelled");
                                 }
                                 @Override
                                 public void onError(FacebookException e) {
-                                    onInviteFriendsWithInviteIdsResult(false, e.toString());
+                                    FacebookX.onInvitedWrapper(false, e.toString());
                                 }
                             }
                     );
@@ -263,6 +263,16 @@ public class FacebookX {
         FacebookX.runOnGLThread(new Runnable() {
             public void run() {
                 FacebookX.onSharedCancel();
+            }
+        });
+    }
+
+    private static void onInvitedWrapper(final boolean success, final String msg) {
+        FacebookX.runOnGLThread(new Runnable() {
+            public void run() {
+                Log.d("Lines", "onInvitedWrapper: " + (success ? "true" : "false") + ", " + msg);
+                FacebookX.onInviteFriendsWithInviteIdsResult(success, msg);
+                Log.d("Lines", "  -> called js callback");
             }
         });
     }
